@@ -1,0 +1,254 @@
+<title>Overlay Install Card</title>
+<style>
+  :root {
+    --paper: #f2f3f7;
+    --card: #ffffff;
+    --ink: #171c27;
+    --ink-soft: #5c667d;
+    --line: #dde1ea;
+    --accent: #b8621b;
+    --accent-soft: #f6ede3;
+    --good: #2f7d5b;
+    --mono-bg: #eceef4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10131b;
+      --card: #171b25;
+      --ink: #e7eaf2;
+      --ink-soft: #8d97ac;
+      --line: #262c3a;
+      --accent: #eda257;
+      --accent-soft: #2a2118;
+      --good: #59b98c;
+      --mono-bg: #0c0f16;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #10131b;
+    --card: #171b25;
+    --ink: #e7eaf2;
+    --ink-soft: #8d97ac;
+    --line: #262c3a;
+    --accent: #eda257;
+    --accent-soft: #2a2118;
+    --good: #59b98c;
+    --mono-bg: #0c0f16;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap {
+    max-width: 34rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.15rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .eyebrow {
+    font-size: .69rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  h1 {
+    margin: .3rem 0 0;
+    font-size: 1.95rem;
+    line-height: 1.12;
+    letter-spacing: -.023em;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+
+  .lede {
+    margin: .6rem 0 0;
+    color: var(--ink-soft);
+    font-size: 1rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+  }
+
+  button {
+    font: inherit;
+    border: 0;
+    border-radius: 11px;
+    padding: .95rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .primary { background: var(--accent); color: #fff; font-size: 1.02rem; }
+  .primary.done { background: var(--good); }
+  .ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    font-size: .92rem;
+    padding: .7rem 1rem;
+  }
+
+  .meta {
+    font: 500 .78rem/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1.05rem; counter-reset: s; }
+  ol li { display: grid; grid-template-columns: 1.6rem 1fr; gap: .75rem; align-items: start; counter-increment: s; }
+  ol li::before {
+    content: counter(s);
+    font: 600 .78rem/1.6rem ui-monospace, "SF Mono", Menlo, monospace;
+    height: 1.6rem;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  ol li p { margin: 0; }
+  ol li p + p { margin-top: .3rem; color: var(--ink-soft); font-size: .9rem; }
+
+  h2 {
+    margin: 0;
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  kbd {
+    font: 600 .85em ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--mono-bg);
+    border-radius: 5px;
+    padding: .1em .38em;
+  }
+
+  ul.feat { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+  ul.feat li { display: grid; grid-template-columns: .9rem 1fr; gap: .6rem; font-size: .94rem; align-items: baseline; }
+  ul.feat li::before { content: ""; width: .34rem; height: .34rem; border-radius: 50%; background: var(--accent); transform: translateY(-.18rem); }
+
+  .note { font-size: .87rem; color: var(--ink-soft); }
+  .note strong { color: var(--ink); font-weight: 600; }
+
+  #src { position: fixed; left: -9999px; top: 0; opacity: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">v0.1 · Axiom &amp; GMGN</div>
+    <h1>Meme Coin Overlay</h1>
+    <p class="lede">A Safari bookmark that drops a floating panel on any token page — contract address, one-tap copy, and jumps to every other terminal.</p>
+  </header>
+
+  <div class="card">
+    <button class="primary" id="copy">Copy bookmarklet</button>
+    <button class="ghost" id="demo">Preview it on this page</button>
+    <div class="meta" id="size">—</div>
+  </div>
+
+  <section class="card">
+    <h2>Install on iPhone</h2>
+    <ol>
+      <li>
+        <div>
+          <p>Tap <strong>Copy bookmarklet</strong> above.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p>In Safari, bookmark any page: share sheet → <kbd>Add Bookmark</kbd>.</p>
+          <p>Name it <kbd>OV</kbd> — short, because you'll type it a lot.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p>Open <kbd>Bookmarks</kbd> → <kbd>Edit</kbd> → tap <kbd>OV</kbd>.</p>
+          <p>Clear the URL field completely, then paste.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p>On a token page, tap the address bar and type <kbd>OV</kbd>.</p>
+          <p>Pick the bookmark from the suggestions — the panel appears.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>What it does today</h2>
+    <ul class="feat">
+      <li>Drag it anywhere; it remembers where you left it.</li>
+      <li>Reads the contract address off the URL, or off the page if the URL doesn't carry one.</li>
+      <li>Copy the CA with one tap.</li>
+      <li>Opens the same token on Axiom, GMGN, Dexscreener, Photon, Bullx, Solscan.</li>
+      <li>Follows you when Axiom or GMGN switches tokens without a page reload.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Notes</h2>
+    <p class="note">Tap the bookmark again to hide the panel, once more to bring it back. <kbd>×</kbd> removes it until you relaunch.</p>
+    <p class="note"><strong>This is the skeleton.</strong> It exists so you can confirm the install works on your phone before the real feature set goes in. Every update after this means re-pasting the bookmark URL, so it's worth knowing the plumbing holds first.</p>
+  </section>
+</div>
+
+<textarea id="src" readonly>javascript:(function%20()%20%7B%0Avar%20NS%20%3D%20'__memeOverlay'%3B%0Aif%20(window%5BNS%5D)%20%7B%20window%5BNS%5D.toggle()%3B%20return%3B%20%7D%0Avar%20STORE%20%3D%20'memeOverlay.v1'%3B%0Avar%20state%20%3D%20%7B%20x%3A%20null%2C%20y%3A%20null%2C%20collapsed%3A%20false%20%7D%3B%0Atry%20%7B%20state%20%3D%20Object.assign(state%2C%20JSON.parse(localStorage.getItem(STORE)%20%7C%7C%20'%7B%7D'))%3B%20%7D%20catch%20(e)%20%7B%7D%0Afunction%20save()%20%7B%20try%20%7B%20localStorage.setItem(STORE%2C%20JSON.stringify(state))%3B%20%7D%20catch%20(e)%20%7B%7D%20%7D%0Afunction%20host()%20%7B%0Avar%20h%20%3D%20location.hostname%3B%0Aif%20(%2Faxiom%2F.test(h))%20return%20'axiom'%3B%0Aif%20(%2Fgmgn%2F.test(h))%20return%20'gmgn'%3B%0Aif%20(%2Fdexscreener%2F.test(h))%20return%20'dexscreener'%3B%0Aif%20(%2Fphoton%2F.test(h))%20return%20'photon'%3B%0Aif%20(%2Fbullx%2F.test(h))%20return%20'bullx'%3B%0Areturn%20'other'%3B%0A%7D%0Avar%20SOL%20%3D%20%2F%5B1-9A-HJ-NP-Za-km-z%5D%7B32%2C44%7D%2F%3B%0Avar%20EVM%20%3D%20%2F0x%5Ba-fA-F0-9%5D%7B40%7D%2F%3B%0Afunction%20detectToken()%20%7B%0Avar%20url%20%3D%20location.href%3B%0Avar%20m%20%3D%20url.match(EVM)%20%7C%7C%20url.match(SOL)%3B%0Aif%20(m)%20return%20%7B%20addr%3A%20m%5B0%5D%2C%20chain%3A%20m%5B0%5D.indexOf('0x')%20%3D%3D%3D%200%20%3F%20'evm'%20%3A%20'sol'%2C%20src%3A%20'url'%20%7D%3B%0Avar%20txt%20%3D%20(document.body%20%3F%20document.body.innerText%20%3A%20'')%20%7C%7C%20''%3B%0Am%20%3D%20txt.match(EVM)%20%7C%7C%20txt.match(SOL)%3B%0Aif%20(m)%20return%20%7B%20addr%3A%20m%5B0%5D%2C%20chain%3A%20m%5B0%5D.indexOf('0x')%20%3D%3D%3D%200%20%3F%20'evm'%20%3A%20'sol'%2C%20src%3A%20'page'%20%7D%3B%0Areturn%20null%3B%0A%7D%0Afunction%20short(a)%20%7B%20return%20a%20%3F%20a.slice(0%2C%204)%20%2B%20'%E2%80%A6'%20%2B%20a.slice(-4)%20%3A%20'%E2%80%94'%3B%20%7D%0Afunction%20links(addr)%20%7B%0Aif%20(!addr)%20return%20%5B%5D%3B%0Areturn%20%5B%0A%5B'Axiom'%2C%20'https%3A%2F%2Faxiom.trade%2Fmeme%2F'%20%2B%20addr%5D%2C%0A%5B'GMGN'%2C%20'https%3A%2F%2Fgmgn.ai%2Fsol%2Ftoken%2F'%20%2B%20addr%5D%2C%0A%5B'DexS'%2C%20'https%3A%2F%2Fdexscreener.com%2Fsolana%2F'%20%2B%20addr%5D%2C%0A%5B'Photon'%2C%20'https%3A%2F%2Fphoton-sol.tinyastro.io%2Fen%2Flp%2F'%20%2B%20addr%5D%2C%0A%5B'Bullx'%2C%20'https%3A%2F%2Fbullx.io%2Fterminal%3FchainId%3D1399811149%26address%3D'%20%2B%20addr%5D%2C%0A%5B'Solscan'%2C%20'https%3A%2F%2Fsolscan.io%2Ftoken%2F'%20%2B%20addr%5D%0A%5D%3B%0A%7D%0Avar%20mount%20%3D%20document.createElement('div')%3B%0Amount.id%20%3D%20'meme-overlay-mount'%3B%0Amount.style.cssText%20%3D%20'position%3Afixed%3Bz-index%3A2147483647%3Btop%3A0%3Bleft%3A0%3Bwidth%3A0%3Bheight%3A0%3B'%3B%0A(document.body%20%7C%7C%20document.documentElement).appendChild(mount)%3B%0Avar%20root%20%3D%20mount.attachShadow%20%3F%20mount.attachShadow(%7B%20mode%3A%20'open'%20%7D)%20%3A%20mount%3B%0Avar%20css%20%3D%20document.createElement('style')%3B%0Acss.textContent%20%3D%20%5B%0A'%3Ahost%2C*%7Bbox-sizing%3Aborder-box%7D'%2C%0A'.panel%7Bposition%3Afixed%3Bwidth%3A250px%3Bbackground%3Argba(14%2C16%2C22%2C.94)%3Bcolor%3A%23e8ecf4%3B'%2C%0A'font%3A12px%2F1.35%20-apple-system%2CBlinkMacSystemFont%2C%22SF%20Pro%20Text%22%2Csystem-ui%2Csans-serif%3B'%2C%0A'border%3A1px%20solid%20%232a3040%3Bborder-radius%3A12px%3Bbox-shadow%3A0%208px%2028px%20rgba(0%2C0%2C0%2C.5)%3B'%2C%0A'backdrop-filter%3Ablur(8px)%3B-webkit-backdrop-filter%3Ablur(8px)%3Boverflow%3Ahidden%3Btouch-action%3Anone%7D'%2C%0A'.hd%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A6px%3Bpadding%3A8px%209px%3Bbackground%3Argba(255%2C255%2C255%2C.04)%3B'%2C%0A'border-bottom%3A1px%20solid%20%23232838%3Bcursor%3Agrab%3Buser-select%3Anone%3B-webkit-user-select%3Anone%7D'%2C%0A'.dot%7Bwidth%3A7px%3Bheight%3A7px%3Bborder-radius%3A50%25%3Bbackground%3A%233ddc84%3Bflex%3A0%200%20auto%7D'%2C%0A'.ttl%7Bflex%3A1%3Bfont-weight%3A600%3Bletter-spacing%3A.02em%3Bfont-size%3A11px%3Btext-transform%3Auppercase%3Bcolor%3A%239aa6bd%7D'%2C%0A'.ico%7Bwidth%3A22px%3Bheight%3A22px%3Bborder%3A0%3Bborder-radius%3A6px%3Bbackground%3Argba(255%2C255%2C255%2C.06)%3B'%2C%0A'color%3A%23cbd4e6%3Bfont-size%3A13px%3Bline-height%3A1%3Bcursor%3Apointer%3Bflex%3A0%200%20auto%7D'%2C%0A'.ico%3Aactive%7Bbackground%3Argba(255%2C255%2C255%2C.14)%7D'%2C%0A'.bd%7Bpadding%3A9px%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Bgap%3A9px%7D'%2C%0A'.collapsed%20.bd%7Bdisplay%3Anone%7D'%2C%0A'.row%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A6px%7D'%2C%0A'.lbl%7Bfont-size%3A10px%3Btext-transform%3Auppercase%3Bletter-spacing%3A.05em%3Bcolor%3A%236f7c96%7D'%2C%0A'.ca%7Bflex%3A1%3Bfont-family%3Aui-monospace%2CMenlo%2Cmonospace%3Bfont-size%3A11px%3Bcolor%3A%23e8ecf4%3B'%2C%0A'overflow%3Ahidden%3Btext-overflow%3Aellipsis%3Bwhite-space%3Anowrap%7D'%2C%0A'.btn%7Bborder%3A1px%20solid%20%232f3648%3Bbackground%3A%231a1f2b%3Bcolor%3A%23dbe3f2%3Bborder-radius%3A7px%3B'%2C%0A'padding%3A5px%208px%3Bfont-size%3A11px%3Bcursor%3Apointer%3Bwhite-space%3Anowrap%7D'%2C%0A'.btn%3Aactive%7Bbackground%3A%23242b3a%7D'%2C%0A'.grid%7Bdisplay%3Agrid%3Bgrid-template-columns%3Arepeat(3%2C1fr)%3Bgap%3A5px%7D'%2C%0A'.grid%20a%7Bdisplay%3Ablock%3Btext-align%3Acenter%3Btext-decoration%3Anone%3Bcolor%3A%23b9c4da%3Bbackground%3A%23161b25%3B'%2C%0A'border%3A1px%20solid%20%23262d3d%3Bborder-radius%3A7px%3Bpadding%3A6px%202px%3Bfont-size%3A11px%7D'%2C%0A'.empty%7Bcolor%3A%236f7c96%3Bfont-size%3A11px%3Btext-align%3Acenter%3Bpadding%3A4px%200%7D'%0A%5D.join('')%3B%0Aroot.appendChild(css)%3B%0Avar%20panel%20%3D%20document.createElement('div')%3B%0Apanel.className%20%3D%20'panel'%20%2B%20(state.collapsed%20%3F%20'%20collapsed'%20%3A%20'')%3B%0Apanel.innerHTML%20%3D%0A'%3Cdiv%20class%3D%22hd%22%20data-drag%3E'%20%2B%0A'%3Cspan%20class%3D%22dot%22%3E%3C%2Fspan%3E'%20%2B%0A'%3Cspan%20class%3D%22ttl%22%3EOverlay%3C%2Fspan%3E'%20%2B%0A'%3Cbutton%20class%3D%22ico%22%20data-act%3D%22collapse%22%3E'%20%2B%20(state.collapsed%20%3F%20'%2B'%20%3A%20'%E2%80%93')%20%2B%20'%3C%2Fbutton%3E'%20%2B%0A'%3Cbutton%20class%3D%22ico%22%20data-act%3D%22close%22%3E%C3%97%3C%2Fbutton%3E'%20%2B%0A'%3C%2Fdiv%3E'%20%2B%0A'%3Cdiv%20class%3D%22bd%22%3E'%20%2B%0A'%3Cdiv%20class%3D%22row%22%3E%3Cspan%20class%3D%22lbl%22%3ECA%3C%2Fspan%3E%3Cspan%20class%3D%22ca%22%20data-ca%3E%E2%80%94%3C%2Fspan%3E'%20%2B%0A'%3Cbutton%20class%3D%22btn%22%20data-act%3D%22copy%22%3ECopy%3C%2Fbutton%3E%3C%2Fdiv%3E'%20%2B%0A'%3Cdiv%20class%3D%22grid%22%20data-links%3E%3C%2Fdiv%3E'%20%2B%0A'%3Cdiv%20class%3D%22row%22%3E%3Cbutton%20class%3D%22btn%22%20data-act%3D%22rescan%22%20style%3D%22flex%3A1%22%3ERescan%20page%3C%2Fbutton%3E%3C%2Fdiv%3E'%20%2B%0A'%3C%2Fdiv%3E'%3B%0Aroot.appendChild(panel)%3B%0Afunction%20place(x%2C%20y)%20%7B%0Avar%20w%20%3D%20panel.offsetWidth%20%7C%7C%20250%2C%20h%20%3D%20panel.offsetHeight%20%7C%7C%20120%3B%0Ax%20%3D%20Math.max(4%2C%20Math.min(x%2C%20innerWidth%20-%20w%20-%204))%3B%0Ay%20%3D%20Math.max(4%2C%20Math.min(y%2C%20innerHeight%20-%20h%20-%204))%3B%0Astate.x%20%3D%20x%3B%20state.y%20%3D%20y%3B%0Apanel.style.left%20%3D%20x%20%2B%20'px'%3B%20panel.style.top%20%3D%20y%20%2B%20'px'%3B%0A%7D%0Aplace(state.x%20%3D%3D%20null%20%3F%20innerWidth%20-%20258%20%3A%20state.x%2C%20state.y%20%3D%3D%20null%20%3F%2070%20%3A%20state.y)%3B%0Avar%20drag%20%3D%20null%3B%0Afunction%20pt(e)%20%7B%20var%20t%20%3D%20e.touches%20%3F%20e.touches%5B0%5D%20%3A%20e%3B%20return%20%7B%20x%3A%20t.clientX%2C%20y%3A%20t.clientY%20%7D%3B%20%7D%0Afunction%20down(e)%20%7B%0Aif%20(e.target.closest%20%26%26%20e.target.closest('button'))%20return%3B%0Avar%20p%20%3D%20pt(e)%3B%0Adrag%20%3D%20%7B%20dx%3A%20p.x%20-%20panel.offsetLeft%2C%20dy%3A%20p.y%20-%20panel.offsetTop%20%7D%3B%0Ae.preventDefault()%3B%0A%7D%0Afunction%20move(e)%20%7B%20if%20(!drag)%20return%3B%20var%20p%20%3D%20pt(e)%3B%20place(p.x%20-%20drag.dx%2C%20p.y%20-%20drag.dy)%3B%20e.preventDefault()%3B%20%7D%0Afunction%20up()%20%7B%20if%20(drag)%20%7B%20drag%20%3D%20null%3B%20save()%3B%20%7D%20%7D%0Avar%20hd%20%3D%20panel.querySelector('%5Bdata-drag%5D')%3B%0Ahd.addEventListener('touchstart'%2C%20down%2C%20%7B%20passive%3A%20false%20%7D)%3B%0Ahd.addEventListener('mousedown'%2C%20down)%3B%0AaddEventListener('touchmove'%2C%20move%2C%20%7B%20passive%3A%20false%20%7D)%3B%0AaddEventListener('mousemove'%2C%20move)%3B%0AaddEventListener('touchend'%2C%20up)%3B%0AaddEventListener('mouseup'%2C%20up)%3B%0Avar%20token%20%3D%20null%3B%0Afunction%20render()%20%7B%0Atoken%20%3D%20detectToken()%3B%0Apanel.querySelector('%5Bdata-ca%5D').textContent%20%3D%20token%20%3F%20short(token.addr)%20%3A%20'not%20found'%3B%0Avar%20g%20%3D%20panel.querySelector('%5Bdata-links%5D')%3B%0Ag.innerHTML%20%3D%20''%3B%0Aif%20(!token)%20%7B%20g.innerHTML%20%3D%20'%3Cdiv%20class%3D%22empty%22%20style%3D%22grid-column%3A1%2F-1%22%3Eopen%20a%20token%20page%3C%2Fdiv%3E'%3B%20return%3B%20%7D%0Alinks(token.addr).forEach(function%20(l)%20%7B%0Avar%20a%20%3D%20document.createElement('a')%3B%0Aa.textContent%20%3D%20l%5B0%5D%3B%20a.href%20%3D%20l%5B1%5D%3B%20a.target%20%3D%20'_blank'%3B%20a.rel%20%3D%20'noopener'%3B%0Ag.appendChild(a)%3B%0A%7D)%3B%0A%7D%0Afunction%20copy(text%2C%20btn)%20%7B%0Avar%20done%20%3D%20function%20()%20%7B%20var%20o%20%3D%20btn.textContent%3B%20btn.textContent%20%3D%20'%E2%9C%93'%3B%20setTimeout(function%20()%20%7B%20btn.textContent%20%3D%20o%3B%20%7D%2C%20900)%3B%20%7D%3B%0Aif%20(navigator.clipboard%20%26%26%20navigator.clipboard.writeText)%20%7B%0Anavigator.clipboard.writeText(text).then(done%2C%20function%20()%20%7B%20fallback(text)%3B%20done()%3B%20%7D)%3B%0A%7D%20else%20%7B%20fallback(text)%3B%20done()%3B%20%7D%0A%7D%0Afunction%20fallback(text)%20%7B%0Avar%20ta%20%3D%20document.createElement('textarea')%3B%0Ata.value%20%3D%20text%3B%20ta.style.cssText%20%3D%20'position%3Afixed%3Bopacity%3A0'%3B%0Adocument.body.appendChild(ta)%3B%20ta.select()%3B%0Atry%20%7B%20document.execCommand('copy')%3B%20%7D%20catch%20(e)%20%7B%7D%0Adocument.body.removeChild(ta)%3B%0A%7D%0Apanel.addEventListener('click'%2C%20function%20(e)%20%7B%0Avar%20b%20%3D%20e.target.closest%20%26%26%20e.target.closest('%5Bdata-act%5D')%3B%0Aif%20(!b)%20return%3B%0Avar%20act%20%3D%20b.getAttribute('data-act')%3B%0Aif%20(act%20%3D%3D%3D%20'close')%20%7B%20api.destroy()%3B%20%7D%0Aelse%20if%20(act%20%3D%3D%3D%20'collapse')%20%7B%0Astate.collapsed%20%3D%20!state.collapsed%3B%0Apanel.classList.toggle('collapsed'%2C%20state.collapsed)%3B%0Ab.textContent%20%3D%20state.collapsed%20%3F%20'%2B'%20%3A%20'%E2%80%93'%3B%0Asave()%3B%0A%7D%0Aelse%20if%20(act%20%3D%3D%3D%20'copy')%20%7B%20if%20(token)%20copy(token.addr%2C%20b)%3B%20%7D%0Aelse%20if%20(act%20%3D%3D%3D%20'rescan')%20%7B%20render()%3B%20%7D%0A%7D)%3B%0Avar%20lastUrl%20%3D%20location.href%3B%0Avar%20tick%20%3D%20setInterval(function%20()%20%7B%0Aif%20(location.href%20!%3D%3D%20lastUrl)%20%7B%20lastUrl%20%3D%20location.href%3B%20render()%3B%20%7D%0A%7D%2C%20800)%3B%0Avar%20api%20%3D%20%7B%0Aversion%3A%20'0.1.0'%2C%0Ahost%3A%20host()%2C%0Atoggle%3A%20function%20()%20%7B%20mount.style.display%20%3D%20mount.style.display%20%3D%3D%3D%20'none'%20%3F%20''%20%3A%20'none'%3B%20%7D%2C%0Arefresh%3A%20render%2C%0Adestroy%3A%20function%20()%20%7B%0AclearInterval(tick)%3B%0AremoveEventListener('touchmove'%2C%20move)%3B%20removeEventListener('mousemove'%2C%20move)%3B%0AremoveEventListener('touchend'%2C%20up)%3B%20removeEventListener('mouseup'%2C%20up)%3B%0Amount.remove()%3B%20delete%20window%5BNS%5D%3B%0A%7D%0A%7D%3B%0Awindow%5BNS%5D%20%3D%20api%3B%0Arender()%3B%0A%7D)()%3B</textarea>
+
+<script>
+  var src = document.getElementById('src');
+  var code = src.value;
+  document.getElementById('size').textContent = (code.length / 1024).toFixed(1) + ' KB · ' + code.length + ' chars';
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var btn = this;
+    var ok = function () {
+      btn.textContent = 'Copied — now go make the bookmark';
+      btn.classList.add('done');
+      setTimeout(function () { btn.textContent = 'Copy bookmarklet'; btn.classList.remove('done'); }, 3500);
+    };
+    var manual = function () {
+      src.style.cssText = 'position:static;opacity:1;width:100%;height:6rem;font:11px ui-monospace,monospace';
+      src.select();
+      btn.textContent = 'Select all in the box, then Copy';
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(ok, manual);
+    } else {
+      manual();
+    }
+  });
+
+  document.getElementById('demo').addEventListener('click', function () {
+    try {
+      (0, eval)(decodeURIComponent(code.slice('javascript:'.length)));
+      this.textContent = 'Tap again to toggle the panel';
+    } catch (e) {
+      this.textContent = 'Preview blocked here — try it on Axiom';
+    }
+  });
+</script>
