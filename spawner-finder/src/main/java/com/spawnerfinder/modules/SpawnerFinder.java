@@ -13,7 +13,6 @@ import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.EntityType;
@@ -252,10 +251,6 @@ public class SpawnerFinder extends Module {
         sightings.clear();
         seenEntityIds.clear();
         found.clear();
-    }
-
-    private void info(String message, Object... args) {
-        ChatUtils.info("(Spawner Finder) " + message, args);
     }
 
     private record Sighting(double x, double y, double z, long time) {
