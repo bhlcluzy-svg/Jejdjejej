@@ -1,2 +1,6 @@
 node_modules/
 .DS_Store
+
+# spawner-finder build output
+spawner-finder/.gradle/
+spawner-finder/build/

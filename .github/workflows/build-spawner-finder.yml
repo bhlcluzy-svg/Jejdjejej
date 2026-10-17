@@ -1,0 +1,52 @@
+name: Build Spawner Finder
+
+on:
+  push:
+    paths:
+      - 'spawner-finder/**'
+      - '.github/workflows/build-spawner-finder.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spawner-finder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.4.1'
+
+      # Use the newest yarn mappings, Fabric loader and Meteor build for 1.21.11
+      # instead of hardcoding build numbers that go stale.
+      - name: Resolve versions
+        run: |
+          set -u
+          ARGS=""
+          YARN=$(curl -sf https://meta.fabricmc.net/v2/versions/yarn/1.21.11 | jq -r '.[0].version // empty' || true)
+          LOADER=$(curl -sf https://meta.fabricmc.net/v2/versions/loader | jq -r '[.[] | select(.stable)][0].version // empty' || true)
+          METEOR=$(curl -sf https://maven.meteordev.org/snapshots/meteordevelopment/meteor-client/maven-metadata.xml \
+            | grep -o '<version>1\.21\.11[^<]*</version>' | sed -e 's/<version>//' -e 's/<\/version>//' | tail -n 1 || true)
+          echo "yarn=${YARN:-default} loader=${LOADER:-default} meteor=${METEOR:-default}"
+          [ -n "$YARN" ] && ARGS="$ARGS -Pyarn_mappings=$YARN"
+          [ -n "$LOADER" ] && ARGS="$ARGS -Ploader_version=$LOADER"
+          [ -n "$METEOR" ] && ARGS="$ARGS -Pmeteor_version=$METEOR"
+          echo "VERSION_ARGS=$ARGS" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: gradle build $VERSION_ARGS --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spawner-finder
+          path: |
+            spawner-finder/build/libs/*.jar
+            !spawner-finder/build/libs/*-sources.jar

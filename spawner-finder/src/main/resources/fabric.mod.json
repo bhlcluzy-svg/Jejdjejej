@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "spawner-finder",
+  "version": "${version}",
+  "name": "Spawner Finder",
+  "description": "Meteor addon that guesses where mob spawners are from where new mobs keep appearing.",
+  "authors": [
+    "bhlcluzy-svg"
+  ],
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "com.spawnerfinder.SpawnerFinderAddon"
+    ]
+  },
+  "custom": {
+    "modmenu": {
+      "parent": {
+        "id": "meteor-client"
+      }
+    }
+  },
+  "depends": {
+    "java": ">=21",
+    "minecraft": "~1.21.11",
+    "fabricloader": ">=0.16.0",
+    "meteor-client": "*"
+  },
+  "suggests": {
+    "maxaddon": "*"
+  }
+}
