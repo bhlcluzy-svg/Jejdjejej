@@ -1,6 +1,6 @@
 # Spawner Finder
 
-A small Meteor Client addon for Minecraft 1.21.11 with one module, `spawner-finder`.
+A small Meteor Client addon for Minecraft 1.21.11 with two modules, `spawner-finder` and `packet-logger`.
 
 ## What it does
 
@@ -36,3 +36,17 @@ mods folder next to Meteor Client.
 | cluster-radius | 5 | How close spawns must be to count as one spot |
 | min-spawns | 4 | New mobs needed before a spot is flagged |
 | time-window | 90 | Only count mobs from the last this-many seconds |
+
+## packet-logger
+
+Records what the server sends into `.minecraft/spawner-finder-logs/<label>_<time>.jsonl`, one event
+per line, so a recording made near a known base can be compared with one made over untouched land.
+Pick the `label` (Base, Wild or Test) before turning it on; turning it off saves the file and prints
+a summary in chat.
+
+It records: per-section sky and block light for each chunk, block changes, block entities, block
+events (pistons, chests), sounds, entities appearing, particles, world events, and your position once
+a second. It does not record chat or anything about your account, and the file never leaves your PC.
+
+Light is one character per 16-block section, bottom to top, starting one section below the world:
+`.` not sent, `e` sent as empty, `0` all dark, `F` all full, `m` mixed.
