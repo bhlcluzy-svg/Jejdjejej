@@ -54,11 +54,23 @@ Light is one character per 16-block section, bottom to top, starting one section
 ## activity-finder
 
 Flags spots underground where something is happening right now, using the events the server sends
-so the game can play them: another player's block cracking animation, "block broken" world events,
-block events (pistons, chests, barrels, shulkers, note blocks) and block sounds. Mob sounds are never
-used. Events within `ignore-near-me` blocks of you, above `max-y`, or less than `min-depth` blocks
-under the ground at that column are ignored. Once a spot collects `min-events` events within
-`time-window` seconds it is flagged with a chat message, a box and a beam.
+so the game can play them, and guesses what each spot is:
+
+| Guess | From |
+|---|---|
+| Spawner | Spawner spawn world events, sent at the spawner's position whenever it spawns a mob |
+| Possible skeleton (etc.) spawner | `min-mob-sounds` sounds from the same hostile mob coming from one spot |
+| Player mining | Another player's block cracking animation, block-broken events, break sounds |
+| Player walking | Footstep sounds |
+| Storage / machine | Block events: chests, barrels and shulkers opening, pistons, note blocks |
+| Building | Block place sounds |
+
+Mob sounds on their own never flag a spot unless they cluster like a spawner. Events within
+`ignore-near-me` blocks of you, above `max-y`, or less than `min-depth` blocks under the ground at that
+column are ignored. A spawner event flags a spot at once; otherwise a spot needs `min-events` events
+within `time-window` seconds. Flagged spots get a chat message, a 16x16 outline of their chunk at the
+spot's height, a small box and a beam (red for spawners), and a line in the top-right corner of the
+screen with the guess, coordinates and distance.
 
 These events only reach you from a few dozen blocks away, so this catches activity you pass close
 to, not bases from far away. To check it works without other players, build a piston clock below
