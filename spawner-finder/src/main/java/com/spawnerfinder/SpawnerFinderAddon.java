@@ -1,6 +1,7 @@
 package com.spawnerfinder;
 
 import com.mojang.logging.LogUtils;
+import com.spawnerfinder.modules.ActivityFinder;
 import com.spawnerfinder.modules.PacketLogger;
 import com.spawnerfinder.modules.SpawnerFinder;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
@@ -22,6 +23,7 @@ public class SpawnerFinderAddon extends MeteorAddon {
         LOG.info("[Spawner Finder] Adding module to category {}", category.name);
         Modules.get().add(new SpawnerFinder(category));
         Modules.get().add(new PacketLogger(category));
+        Modules.get().add(new ActivityFinder(category));
     }
 
     private static Category findCategory(String name) {

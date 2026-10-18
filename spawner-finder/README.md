@@ -1,6 +1,6 @@
 # Spawner Finder
 
-A small Meteor Client addon for Minecraft 1.21.11 with two modules, `spawner-finder` and `packet-logger`.
+A small Meteor Client addon for Minecraft 1.21.11 with three modules: `spawner-finder`, `packet-logger` and `activity-finder`.
 
 ## What it does
 
@@ -50,3 +50,16 @@ a second. It does not record chat or anything about your account, and the file n
 
 Light is one character per 16-block section, bottom to top, starting one section below the world:
 `.` not sent, `e` sent as empty, `0` all dark, `F` all full, `m` mixed.
+
+## activity-finder
+
+Flags spots underground where something is happening right now, using the events the server sends
+so the game can play them: another player's block cracking animation, "block broken" world events,
+block events (pistons, chests, barrels, shulkers, note blocks) and block sounds. Mob sounds are never
+used. Events within `ignore-near-me` blocks of you, above `max-y`, or less than `min-depth` blocks
+under the ground at that column are ignored. Once a spot collects `min-events` events within
+`time-window` seconds it is flagged with a chat message, a box and a beam.
+
+These events only reach you from a few dozen blocks away, so this catches activity you pass close
+to, not bases from far away. To check it works without other players, build a piston clock below
+`max-y` in singleplayer and stand more than `ignore-near-me` blocks from it.
