@@ -24,6 +24,6 @@ public abstract class TitleScreenMixin extends Screen {
 			ObsidianClient.CONFIG.vanillaMenu = false;
 			ObsidianClient.CONFIG.save();
 			this.client.setScreen(new ObsidianTitleScreen());
-		}).dimensions(this.width - 86, this.height - 26, 80, 20).build());
+		}).dimensions(this.width - 86, 6, 80, 20).build());
 	}
 }

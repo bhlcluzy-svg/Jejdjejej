@@ -13,6 +13,12 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Only Fabric API's resource loader, bundled inside our jar, so the logo,
+	// glow and music load even when Fabric API itself is not installed.
+	def resourceLoader = fabricApi.module("fabric-resource-loader-v0", project.fabric_api_version)
+	modImplementation resourceLoader
+	include resourceLoader
 }
 
 processResources {

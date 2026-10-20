@@ -15,12 +15,13 @@ public final class ModsScreens {
 	private ModsScreens() {
 	}
 
-	/** Mods you installed: no built-ins (Minecraft, Java) and no libraries bundled inside other mods. */
+	/** Mods you installed: no built-ins (Minecraft, Java, the loader) and no libraries bundled inside other mods. */
 	public static List<ModContainer> userMods() {
 		if (mods == null) {
 			mods = FabricLoader.getInstance().getAllMods().stream()
 				.filter(m -> m.getContainingMod().isEmpty())
 				.filter(m -> !"builtin".equals(m.getMetadata().getType()))
+				.filter(m -> !m.getMetadata().getId().equals("fabricloader"))
 				.sorted(Comparator.comparing(m -> m.getMetadata().getName().toLowerCase()))
 				.toList();
 		}

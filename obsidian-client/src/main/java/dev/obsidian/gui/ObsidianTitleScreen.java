@@ -46,6 +46,8 @@ public class ObsidianTitleScreen extends Screen {
 	/** Seconds into the intro, or past INTRO_LENGTH when it is finished or skipped. */
 	private float introT;
 	private boolean introStarted;
+	/** When the menu became usable, for fading out the hint. */
+	private float readyAt = -1f;
 
 	public ObsidianTitleScreen() {
 		super(Text.literal(ObsidianClient.NAME));
@@ -158,8 +160,13 @@ public class ObsidianTitleScreen extends Screen {
 		if (introRunning()) renderIntroLogo(ctx);
 
 		if (!introRunning()) {
-			String hint = "Drag panels to move them  ·  Right-click a panel to reset it";
-			ctx.drawCenteredTextWithShadow(textRenderer, hint, width / 2, height - 10, Theme.fade(Theme.TEXT_DIM, 0.45f));
+			if (readyAt < 0f) readyAt = time;
+			// Shown for a few seconds, then it gets out of the way of the panels.
+			float hintAlpha = 1f - MathHelper.clamp((time - readyAt - 5f) / 1.5f, 0f, 1f);
+			if (hintAlpha > 0.02f) {
+				String hint = "Drag panels to move them  ·  Right-click a panel to reset it";
+				ctx.drawCenteredTextWithShadow(textRenderer, hint, width / 2, height - 10, Theme.fade(Theme.TEXT, 0.7f * hintAlpha));
+			}
 		}
 	}
 
