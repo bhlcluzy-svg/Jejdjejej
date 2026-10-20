@@ -356,7 +356,8 @@ public class ObsidianTitleScreen extends Screen {
 			ctx.drawTextWithShadow(tr, "v" + ObsidianClient.VERSION, tx + tr.getWidth("OBSIDIAN") + 4, ty, Theme.fade(Theme.TEXT_DIM, alpha));
 			ctx.drawTextWithShadow(tr, "Minecraft " + SharedConstants.getGameVersion().name(), tx, ty + 10, Theme.fade(Theme.TEXT, alpha));
 			ctx.drawTextWithShadow(tr, "Fabric Loader " + loader, tx, ty + 20, Theme.fade(Theme.TEXT_DIM, alpha));
-			ctx.drawTextWithShadow(tr, ModsScreens.count() + " mods loaded", tx, ty + 30, Theme.fade(Theme.TEXT_DIM, alpha));
+			int mods = ModsScreens.count();
+			ctx.drawTextWithShadow(tr, mods + (mods == 1 ? " mod loaded" : " mods loaded"), tx, ty + 30, Theme.fade(Theme.TEXT_DIM, alpha));
 		}
 	}
 

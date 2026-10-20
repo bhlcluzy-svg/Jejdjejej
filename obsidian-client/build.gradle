@@ -14,11 +14,14 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Only Fabric API's resource loader, bundled inside our jar, so the logo,
-	// glow and music load even when Fabric API itself is not installed.
-	def resourceLoader = fabricApi.module("fabric-resource-loader-v0", project.fabric_api_version)
-	modImplementation resourceLoader
-	include resourceLoader
+	// Only Fabric API's resource loader (and the two modules it needs), bundled
+	// inside our jar, so the logo, glow and music load even when Fabric API
+	// itself is not installed. If Fabric API is installed, Loader uses its copy.
+	["fabric-resource-loader-v0", "fabric-resource-loader-v1", "fabric-api-base"].each { name ->
+		def module = fabricApi.module(name, project.fabric_api_version)
+		modImplementation module
+		include module
+	}
 }
 
 processResources {
@@ -38,4 +41,10 @@ tasks.withType(JavaCompile).configureEach {
 java {
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
+}
+
+// `gradle prodClient` launches a normal (non-dev) Fabric install with only the
+// built jar in the mods folder, the way it runs on a real PC.
+tasks.register("prodClient", net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+	mods.from(remapJar)
 }

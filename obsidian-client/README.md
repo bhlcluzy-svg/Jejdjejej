@@ -33,7 +33,8 @@ Settings are saved in `config/obsidian.json`.
 
 1. Get the jar: GitHub Actions builds it on every push (workflow "Build Obsidian Client").
    It is also committed to `builds/`.
-2. Put it in `.minecraft/mods` with Fabric Loader for 1.21.11. Fabric API is not required.
+2. Put it in `.minecraft/mods` with Fabric Loader 0.17.3 or newer for 1.21.11. Fabric API is
+   not required (the bits it needs are bundled), but it is fine if you have it.
    It works alongside Meteor and the Spawner Finder addon.
 
 ## Changing the music or logo
