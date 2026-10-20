@@ -1,0 +1,70 @@
+name: Build Obsidian Client
+
+on:
+  push:
+    paths:
+      - 'obsidian-client/**'
+      - '.github/workflows/build-obsidian-client.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: obsidian-client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.4.1'
+
+      # Use the newest yarn mappings and Fabric loader for 1.21.11 instead of
+      # hardcoding build numbers that go stale.
+      - name: Resolve versions
+        run: |
+          set -u
+          ARGS=""
+          YARN=$(curl -sf https://meta.fabricmc.net/v2/versions/yarn/1.21.11 | jq -r '.[0].version // empty' || true)
+          LOADER=$(curl -sf https://meta.fabricmc.net/v2/versions/loader | jq -r '[.[] | select(.stable)][0].version // empty' || true)
+          echo "yarn=${YARN:-default} loader=${LOADER:-default}"
+          [ -n "$YARN" ] && ARGS="$ARGS -Pyarn_mappings=$YARN"
+          [ -n "$LOADER" ] && ARGS="$ARGS -Ploader_version=$LOADER"
+          echo "VERSION_ARGS=$ARGS" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: gradle build $VERSION_ARGS --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: obsidian-client
+          path: |
+            obsidian-client/build/libs/*.jar
+            !obsidian-client/build/libs/*-sources.jar
+
+      # Also commit the jar to the branch under builds/, so it can be fetched
+      # with plain git where artifact downloads are not reachable. Pushes made
+      # with GITHUB_TOKEN do not start another workflow run.
+      - name: Commit jar to branch
+        working-directory: .
+        run: |
+          mkdir -p builds
+          find obsidian-client/build/libs -name '*.jar' ! -name '*-sources.jar' -exec cp {} builds/ \;
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add builds
+          if git diff --cached --quiet; then
+            echo "Jar unchanged"
+          else
+            git commit -m "Add built Obsidian Client jar"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi

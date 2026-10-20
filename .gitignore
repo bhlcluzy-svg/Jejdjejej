@@ -8,3 +8,4 @@ spawner-finder/build/
 # obsidian-client build output
 obsidian-client/.gradle/
 obsidian-client/build/
+obsidian-client/run/

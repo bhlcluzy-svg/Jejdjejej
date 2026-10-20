@@ -1,4 +1,4 @@
-"""Renders the Obsidian logo and mod icon PNGs.
+"""Renders the Obsidian logo, glow sprite and mod icon PNGs.
 
 Run from obsidian-client/: python3 tools/make_logo.py
 Uses Inter Display Black (SIL OFL 1.1).
@@ -87,5 +87,21 @@ def icon():
     print("icon", img.size)
 
 
+def glow():
+    """White radial falloff; the menu tints it for orbs and particles."""
+    s = 128
+    img = Image.new("RGBA", (s, s), (255, 255, 255, 0))
+    px = img.load()
+    c = (s - 1) / 2
+    for y in range(s):
+        for x in range(s):
+            r = ((x - c) ** 2 + (y - c) ** 2) ** 0.5 / c
+            a = max(0.0, 1.0 - r) ** 2.2
+            px[x, y] = (255, 255, 255, int(a * 255))
+    img.save(OUT + "glow.png")
+    print("glow", img.size)
+
+
 logo()
+glow()
 icon()

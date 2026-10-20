@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.obsidian.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ConnectScreenMixin",
+    "MinecraftClientMixin",
+    "MusicTrackerMixin",
+    "SplashOverlayMixin",
+    "TitleScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

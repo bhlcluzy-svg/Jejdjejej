@@ -13,8 +13,6 @@ public class ObsidianClient implements ClientModInitializer {
 	public static ObsidianConfig CONFIG;
 	public static String VERSION = "?";
 
-	/** Set by the Vanilla Menu button so the next title screen is left alone. */
-	public static boolean showVanillaOnce = false;
 	/** The intro only plays once per launch. */
 	public static boolean introPlayed = false;
 
