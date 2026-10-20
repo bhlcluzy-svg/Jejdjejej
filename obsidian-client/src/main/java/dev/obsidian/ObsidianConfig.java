@@ -30,13 +30,20 @@ public class ObsidianConfig {
 
 	/** Panel id -> {x, y} as fractions of the screen size, so layouts survive window resizes. */
 	public Map<String, float[]> panels = new HashMap<>();
+	/** Bumped when the menu layout changes, so old saved positions are dropped. */
+	public int layoutVersion = LAYOUT_VERSION;
+
+	private static final int LAYOUT_VERSION = 2;
 
 	public static ObsidianConfig load() {
 		if (Files.exists(FILE)) {
 			try (Reader reader = Files.newBufferedReader(FILE)) {
 				ObsidianConfig config = GSON.fromJson(reader, ObsidianConfig.class);
 				if (config != null) {
-					if (config.panels == null) config.panels = new HashMap<>();
+					if (config.panels == null || config.layoutVersion != LAYOUT_VERSION) {
+						config.panels = new HashMap<>();
+						config.layoutVersion = LAYOUT_VERSION;
+					}
 					return config;
 				}
 			} catch (Exception e) {

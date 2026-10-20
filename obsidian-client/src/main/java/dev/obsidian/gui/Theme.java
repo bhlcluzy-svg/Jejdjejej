@@ -25,7 +25,32 @@ public final class Theme {
 	public static final int LOGO_H = 233;
 	public static final Identifier GLOW = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/glow.png");
 
+	/** Background layers, back to front. All 1920x1080 except the square eclipse ring. */
+	public static final Identifier BG_SKY = bg("sky");
+	public static final Identifier BG_RING = bg("ring");
+	public static final Identifier BG_FAR = bg("far");
+	public static final Identifier BG_NEAR = bg("near");
+	public static final int BG_W = 1920;
+	public static final int BG_H = 1080;
+	public static final int RING_SIZE = 1100;
+	/** Where the eclipse sits in the 1920x1080 artwork, as fractions. */
+	public static final float RING_X = 0.5f;
+	public static final float RING_Y = 0.36f;
+
 	private Theme() {
+	}
+
+	private static Identifier bg(String name) {
+		return Identifier.of(ObsidianClient.MOD_ID, "textures/gui/bg/" + name + ".png");
+	}
+
+	/** Draws a whole texture stretched over (x, y, w, h), with sub-pixel placement so slow movement stays smooth. */
+	public static void image(DrawContext ctx, Identifier texture, float x, float y, float w, float h, int texW, int texH, int color) {
+		ctx.getMatrices().pushMatrix();
+		ctx.getMatrices().translate(x, y);
+		ctx.getMatrices().scale(w / texW, h / texH);
+		ctx.drawTexture(RenderPipelines.GUI_TEXTURED, texture, 0, 0, 0f, 0f, texW, texH, texW, texH, texW, texH, color);
+		ctx.getMatrices().popMatrix();
 	}
 
 	/** Multiplies a colour's alpha by {@code alpha} (0 to 1). */
@@ -56,13 +81,11 @@ public final class Theme {
 
 	/** Draws the soft glow sprite centred on (cx, cy), tinted with an ARGB colour. */
 	public static void glow(DrawContext ctx, float cx, float cy, float size, int color) {
-		int s = Math.max(1, Math.round(size));
-		ctx.drawTexture(RenderPipelines.GUI_TEXTURED, GLOW, Math.round(cx - s / 2f), Math.round(cy - s / 2f), 0f, 0f, s, s, 128, 128, 128, 128, color);
+		image(ctx, GLOW, cx - size / 2f, cy - size / 2f, size, size, 128, 128, color);
 	}
 
-	public static void logo(DrawContext ctx, int x, int y, int w, float alpha) {
-		int h = Math.round(w * (float) LOGO_H / LOGO_W);
-		ctx.drawTexture(RenderPipelines.GUI_TEXTURED, LOGO, x, y, 0f, 0f, w, h, LOGO_W, LOGO_H, LOGO_W, LOGO_H, fade(0xFFFFFFFF, alpha));
+	public static void logo(DrawContext ctx, float x, float y, float w, float alpha) {
+		image(ctx, LOGO, x, y, w, w * LOGO_H / LOGO_W, LOGO_W, LOGO_H, fade(0xFFFFFFFF, alpha));
 	}
 
 	public static float easeOutCubic(float t) {

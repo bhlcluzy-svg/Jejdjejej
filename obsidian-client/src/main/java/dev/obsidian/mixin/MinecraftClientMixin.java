@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -23,8 +24,18 @@ public abstract class MinecraftClientMixin {
 		return screen;
 	}
 
+	@Unique
+	private static final boolean LOG_FPS = Boolean.getBoolean("obsidian.logFps");
+	@Unique
+	private int obsidian$ticks;
+
 	@Inject(method = "tick", at = @At("TAIL"))
 	private void obsidian$tickMusic(CallbackInfo ci) {
-		MenuMusic.tick((MinecraftClient) (Object) this);
+		MinecraftClient client = (MinecraftClient) (Object) this;
+		MenuMusic.tick(client);
+		// Launch with -Dobsidian.logFps=true to print the frame rate every 3 seconds.
+		if (LOG_FPS && ++obsidian$ticks % 60 == 0 && client.currentScreen != null) {
+			ObsidianClient.LOGGER.info("FPS {} on {}", client.getCurrentFps(), client.currentScreen.getClass().getSimpleName());
+		}
 	}
 }
