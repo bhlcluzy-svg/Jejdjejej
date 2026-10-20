@@ -1,0 +1,10 @@
+{
+  "menu_music": {
+    "sounds": [
+      {
+        "name": "obsidian:menu_music",
+        "stream": true
+      }
+    ]
+  }
+}
