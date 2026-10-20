@@ -1,6 +1,6 @@
 # Spawner Finder
 
-A small Meteor Client addon for Minecraft 1.21.11 with three modules: `spawner-finder`, `packet-logger` and `activity-finder`.
+A small Meteor Client addon for Minecraft 1.21.11 with four modules: `spawner-finder`, `packet-logger`, `activity-finder` and `base-finder`.
 
 ## What it does
 
@@ -75,3 +75,26 @@ screen with the guess, coordinates and distance.
 These events only reach you from a few dozen blocks away, so this catches activity you pass close
 to, not bases from far away. To check it works without other players, build a piston clock below
 `max-y` in singleplayer and stand more than `ignore-near-me` blocks from it.
+
+## base-finder
+
+Scores every chunk the server sends from several independent signs of players, and flags a chunk
+once it reaches `threshold` points. Each flag says which signs it found, in chat and in the
+top-right list, so you can judge a hit instead of trusting it.
+
+| Sign | Default points | Why it means a player |
+|---|---|---|
+| Dark light section | 6 each, up to 2 | Underground sky light sent as a full array of zeros. Sections that were sent lit before, or are solid stone all round, don't count. Least proven: check it with `packet-logger` |
+| Player block | 3 each, up to 4 | Shulkers, ender chests, barrels, hoppers, furnaces, beds, signs and similar in the chunk data |
+| Rotated deepslate | 3 each, up to 3 | Generated deepslate always stands upright |
+| Grown kelp | 2 each, up to 3 | Generated kelp tops are age 20-23; age 25 means it grew near a player |
+| Chest | 1 each, up to 4 | Dungeons and structures have chests too, so it counts for little |
+| Spawner | 1 each, up to 2 | Same: dungeons |
+| Placed light | 1 each, up to 4 | Torches, lanterns, lamps, glowstone underground. Strongholds have torches |
+
+Blocks and block entities above `max-y` (40) are ignored; light sections count when they end below
+`light-max-y` (62). Every weight is a setting. If a sign never shows up near real bases on your
+server, or keeps lighting up wild land, set its weight to 0.
+
+To tune it: record near a base you know and over untouched land with `packet-logger`, then turn on
+`base-finder` in both places and compare what it finds.
