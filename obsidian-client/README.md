@@ -63,8 +63,6 @@ Settings are saved in `config/obsidian.json`.
   the top of `tools/make_scene.py` if they moved), then run `python3 tools/make_scene.py`
   (needs Pillow, numpy and opencv-python-headless). It cuts out the clouds and ground,
   fills the gaps, and regenerates `SceneLayout.java`.
-- Button sounds: `python3 tools/make_sounds.py` (needs numpy and ffmpeg), or drop your own
-  `hover.ogg` and `click.ogg` into `src/main/resources/assets/obsidian/sounds/`.
 - Fonts: replace `title.ttf` / `ui.ttf` in `assets/obsidian/fonts/` with any TTF.
 - Button sounds: replace `hover.ogg` / `click.ogg` in `assets/obsidian/sounds/` (Ogg
   Vorbis; `ffmpeg -i in.mp3 -c:a libvorbis out.ogg`).
