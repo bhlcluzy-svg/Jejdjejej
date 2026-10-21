@@ -3,7 +3,6 @@ package dev.obsidian.gui;
 import dev.obsidian.sound.UiSounds;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.function.Supplier;
@@ -15,7 +14,7 @@ public class ObsidianButton {
 		PILL,
 		/** Just text, brightening and underlined on hover (like "Vanilla Menu"). */
 		TEXT,
-		/** A small square icon button (the volume mute). */
+		/** A small text button with a faint pill on hover (the volume mute). */
 		ICON
 	}
 
@@ -36,9 +35,14 @@ public class ObsidianButton {
 		this.style = style;
 	}
 
-	/** Width a PILL button needs for its label. */
-	public static int pillWidth(TextRenderer tr, String label) {
-		return tr.getWidth(Theme.ui(label.toUpperCase())) + 26;
+	/** Label size for PILL buttons of the given height, in GUI units. */
+	public static float pillTextSize(int height) {
+		return height * 0.46f;
+	}
+
+	/** Width a PILL button of the given height needs for its label. */
+	public static int pillWidth(String label, int height) {
+		return Math.round(SmoothText.width(SmoothText.Face.UI, label.toUpperCase(), pillTextSize(height)) + height * 1.4f);
 	}
 
 	public boolean contains(int px, int py, double mx, double my) {
@@ -60,34 +64,31 @@ public class ObsidianButton {
 
 	private void renderPill(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
 		// Soft shadow that stays put while the button lifts a little on hover.
-		Theme.pill(ctx, x, y + 2, w, h, Theme.fade(0x55000000, alpha));
-		float lift = 1.5f * hover;
-		Theme.pill(ctx, x, y - lift, w, h, Theme.fade(Theme.lerpColor(hover, 0xE62B2D45, 0xF2433F6B), alpha));
-		Text text = Theme.ui(label.get().toUpperCase());
-		int color = Theme.fade(Theme.lerpColor(hover, 0xFFE4E2F2, 0xFFFFFFFF), alpha);
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(x + w / 2f - tr.getWidth(text) / 2f, y - lift + (h - 9) / 2f);
-		if ((color >>> 24) > 8) ctx.drawText(tr, text, 0, 0, color, true);
-		ctx.getMatrices().popMatrix();
+		Theme.pill(ctx, x, y + 1.5f, w, h, Theme.fade(0x50000000, alpha));
+		float lift = 1f * hover;
+		Theme.pill(ctx, x, y - lift, w, h, Theme.fade(Theme.lerpColor(hover, 0xE02B2D45, 0xF0423E6A), alpha));
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFE6E4F2, 0xFFFFFFFF), alpha);
+		float size = pillTextSize(h);
+		SmoothText.drawCentered(ctx, SmoothText.Face.UI, label.get().toUpperCase(), x + w / 2f, y - lift + (h - size) / 2f, size, color, false);
 	}
 
 	private void renderText(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
-		Text text = Theme.ui(label.get().toUpperCase());
-		float scale = 1.25f;
-		float tw = tr.getWidth(text) * scale;
-		int color = Theme.fade(Theme.lerpColor(hover, 0xFFD8D3EE, 0xFFFFFFFF), alpha);
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(x + w - tw, y + (h - 9 * scale) / 2f);
-		ctx.getMatrices().scale(scale, scale);
-		if ((color >>> 24) > 8) ctx.drawText(tr, text, 0, 0, color, true);
-		if (hover > 0.01f) ctx.fill(0, 11, Math.round(tr.getWidth(text) * hover), 12, Theme.fade(0xFFFFFFFF, 0.8f * alpha * hover));
-		ctx.getMatrices().popMatrix();
+		String text = label.get().toUpperCase();
+		float size = h * 0.6f;
+		float tw = SmoothText.width(SmoothText.Face.UI, text, size);
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFDCD8EE, 0xFFFFFFFF), alpha);
+		float tx = x + w - tw;
+		SmoothText.draw(ctx, SmoothText.Face.UI, text, tx, y + (h - size) / 2f, size, color, true);
+		if (hover > 0.01f) {
+			Theme.region(ctx, Theme.PILL, tx, y + (h + size) / 2f + 1f, tw * hover, 0.75f, 31f, 0f, 2, 64, 64, 64, Theme.fade(0xFFFFFFFF, 0.8f * alpha * hover));
+		}
 	}
 
 	private void renderIcon(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
-		Theme.pill(ctx, x, y, w, h, Theme.fade(Theme.lerpColor(hover, 0x00000000, 0x40FFFFFF), alpha));
-		int color = Theme.fade(Theme.lerpColor(hover, 0xFFD8D3EE, 0xFFFFFFFF), alpha);
-		if ((color >>> 24) > 8) ctx.drawCenteredTextWithShadow(tr, label.get(), x + w / 2, y + (h - 8) / 2, color);
+		Theme.pill(ctx, x, y, w, h, Theme.fade(Theme.lerpColor(hover, 0x00FFFFFF, 0x30FFFFFF), alpha));
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFDCD8EE, 0xFFFFFFFF), alpha);
+		float size = h * 0.48f;
+		SmoothText.drawCentered(ctx, SmoothText.Face.UI, label.get().toUpperCase(), x + w / 2f, y + (h - size) / 2f, size, color, false);
 	}
 
 	/** A rectangle with stepped corners of the given radius, which reads as rounded. */

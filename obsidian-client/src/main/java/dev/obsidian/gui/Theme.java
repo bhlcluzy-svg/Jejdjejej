@@ -3,9 +3,6 @@ package dev.obsidian.gui;
 import dev.obsidian.ObsidianClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Style;
-import net.minecraft.text.StyleSpriteSource;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
@@ -26,19 +23,8 @@ public final class Theme {
 	public static final Identifier GLOW = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/glow.png");
 	/** A white circle; its halves and middle make smooth pill shapes. */
 	public static final Identifier PILL = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/pill.png");
-	/** Oswald (condensed bold) for buttons and labels, Fredoka (rounded) for the title. */
-	public static final StyleSpriteSource.Font UI_FONT = new StyleSpriteSource.Font(Identifier.of(ObsidianClient.MOD_ID, "ui"));
-	public static final StyleSpriteSource.Font TITLE_FONT = new StyleSpriteSource.Font(Identifier.of(ObsidianClient.MOD_ID, "title"));
 
 	private Theme() {
-	}
-
-	public static Text ui(String text) {
-		return Text.literal(text).setStyle(Style.EMPTY.withFont(UI_FONT));
-	}
-
-	public static Text title(String text) {
-		return Text.literal(text).setStyle(Style.EMPTY.withFont(TITLE_FONT));
 	}
 
 	/** Draws part of a texture (u, v, rw, rh) stretched over (x, y, w, h), with sub-pixel placement. */
