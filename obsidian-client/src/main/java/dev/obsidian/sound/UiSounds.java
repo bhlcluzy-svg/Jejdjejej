@@ -28,6 +28,6 @@ public final class UiSounds {
 	}
 
 	public static void click() {
-		MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(CLICK, 1.0f, 1.0f));
+		MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.ui(CLICK, 1.0f, 0.55f));
 	}
 }
