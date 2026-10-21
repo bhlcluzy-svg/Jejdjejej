@@ -1,4 +1,4 @@
-"""Splits tools/art/sunset.jpg into layers for the animated menu background.
+"""Splits the sunset picture into layers for the animated menu background.
 
 Run from obsidian-client/: python3 tools/make_scene.py
 Needs Pillow, numpy and opencv-python-headless.
@@ -16,7 +16,9 @@ import numpy as np
 from PIL import Image
 
 SRC = "tools/art/sunset.jpg"
-SCALE = 2
+# The AI-upscaled copy of SRC (tools/ai_upscale.py), used for the actual pixels.
+# Masks and positions are worked out on SRC and scaled up to it.
+HD = "tools/art/sunset_hd.png"
 OUT = "src/main/resources/assets/obsidian/textures/gui/scene/"
 JAVA = "src/main/java/dev/obsidian/gui/SceneLayout.java"
 MCMETA = '{\n  "texture": {\n    "blur": true,\n    "clamp": true\n  }\n}\n'
@@ -32,14 +34,6 @@ def save(img, name):
     img.save(OUT + name + ".png", optimize=True)
     with open(OUT + name + ".png.mcmeta", "w") as f:
         f.write(MCMETA)
-
-
-def upscale(img):
-    """Doubles the picture's size smoothly: remove JPEG noise, enlarge, then an
-    edge-preserving smooth so blocky compression steps do not show at 1080p."""
-    clean = cv2.fastNlMeansDenoisingColored(np.ascontiguousarray(img), None, 6, 6, 7, 21)
-    up = cv2.resize(clean, (img.shape[1] * SCALE, img.shape[0] * SCALE), interpolation=cv2.INTER_CUBIC)
-    return cv2.bilateralFilter(up, 7, 28, 5)
 
 
 def smooth_alpha(mask, size):
@@ -99,7 +93,9 @@ def ground_mask(img):
 def main():
     os.makedirs(OUT, exist_ok=True)
     src = np.asarray(Image.open(SRC).convert("RGB"))
-    big = upscale(src)
+    big = np.asarray(Image.open(HD).convert("RGB"))
+    global SCALE
+    SCALE = big.shape[1] / src.shape[1]
     H, W = big.shape[:2]
 
     # Ground: cut out with a soft edge.
@@ -115,7 +111,7 @@ def main():
     for i, box in enumerate(CLOUDS):
         cm = cloud_mask(src, box)
         cover.append(cm.mean())
-        x0, y0, x1, y1 = [v * SCALE for v in box]
+        x0, y0, x1, y1 = [round(v * SCALE) for v in box]
         grown = cv2.dilate(cm, np.ones((3, 3), np.uint8))
         a = smooth_alpha(grown, (x1 - x0, y1 - y0))
         m = (a > 0.5).astype(np.uint8)
@@ -142,14 +138,14 @@ def main():
         for c in clouds:
             f.write(f"\t\t{{{c[0]}, {c[1]}, {c[2]}, {c[3]}}},\n")
         f.write("\t};\n")
-        px0, py0, px1, py1 = [v * SCALE for v in PORTAL]
+        px0, py0, px1, py1 = [round(v * SCALE) for v in PORTAL]
         f.write(f"\t/** The glowing portal opening: x, y, width, height. */\n")
         f.write(f"\tstatic final int PORTAL_X = {px0}, PORTAL_Y = {py0}, PORTAL_W = {px1 - px0}, PORTAL_H = {py1 - py0};\n")
-        lx, ly, lrx, lry = [v * SCALE for v in LAKE]
+        lx, ly, lrx, lry = [round(v * SCALE) for v in LAKE]
         f.write(f"\t/** The lake, as an ellipse: centre and radii. */\n")
         f.write(f"\tstatic final int LAKE_X = {lx}, LAKE_Y = {ly}, LAKE_RX = {lrx}, LAKE_RY = {lry};\n")
         f.write(f"\t/** Where the sun sets behind the hills. */\n")
-        f.write(f"\tstatic final int SUN_X = {600 * SCALE}, SUN_Y = {345 * SCALE};\n\n")
+        f.write(f"\tstatic final int SUN_X = {round(600 * SCALE)}, SUN_Y = {round(345 * SCALE)};\n\n")
         f.write("\tprivate SceneLayout() {\n\t}\n}\n")
     print("scene", W, H, "cloud coverage", [round(float(c), 2) for c in cover], "ground coverage", round(float(gm_small.mean()), 2))
 

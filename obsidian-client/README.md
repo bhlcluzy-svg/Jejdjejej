@@ -6,6 +6,11 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
 
 ## What it does
 
+- **Launch screen.** While Minecraft loads, an animated Obsidian screen replaces the
+  Mojang one: drifting purple light and particles, a glowing gem, the name revealed letter
+  by letter and a loading bar that follows the real progress. It stays at least long
+  enough for its animation to play, then fades into the menu. (Drawn entirely from
+  code-made textures, because the resource pack is not loaded yet at that point.)
 - **Intro.** The first time the menu opens each launch, the scene fades in from black,
   the "Obsidian" title rises in and the buttons follow. Click or press any key to skip it.
 - **Title and text.** Poppins (SIL Open Font License), bundled in `assets/obsidian/fonts/`
@@ -13,8 +18,8 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
   smoothing, which looks jagged when scaled, so `SmoothText` rasterises each string with
   Java's font renderer at the exact screen pixel size and draws it with linear filtering.
 - **Animated background.** A calm sunset over a lake with an obsidian portal
-  (`tools/art/sunset.jpg`), split into sky, cloud and ground layers (cleaned of JPEG noise,
-  enlarged 2x and smoothed, with soft cut-out edges). The clouds drift, a soft glow swirls inside the
+  (`tools/art/sunset.jpg`, AI-upscaled to 2560 wide as `tools/art/sunset_hd.png` with
+  Real-ESRGAN), split into sky, cloud and ground layers with soft cut-out edges. The clouds drift, a soft glow swirls inside the
   portal and smooth purple particles drift out of it, the
   lake sparkles, the sunset glow breathes and warm specks of light float about. Moving the
   mouse pans the layers gently side to side at different depths. See
@@ -63,15 +68,18 @@ Settings are saved in `config/obsidian.json`.
 - Fonts: replace `title.ttf` / `ui.ttf` in `assets/obsidian/fonts/` with any TTF.
 - Button sounds: replace `hover.ogg` / `click.ogg` in `assets/obsidian/sounds/` (Ogg
   Vorbis; `ffmpeg -i in.mp3 -c:a libvorbis out.ogg`).
-- Glow, pill shape and mod icon: `python3 tools/make_sprites.py` (needs Pillow).
-- Background: replace `tools/art/sunset.jpg` (and the cloud, portal and lake positions at
-  the top of `tools/make_scene.py` if they moved), then run `python3 tools/make_scene.py`
+- Mod icon: `python3 tools/make_sprites.py` (needs Pillow).
+- Background: replace `tools/art/sunset.jpg`, upscale it with
+  `python3 tools/ai_upscale.py MODEL.pth tools/art/sunset.jpg tools/art/sunset_hd.png 2560`
+  (needs torch; model: RealESRGAN_x4plus_anime_6B.pth from
+  huggingface.co/amd/realesrgan-x4plus-anime-6b), adjust the cloud, portal and lake
+  positions at the top of `tools/make_scene.py` if they moved, then run `python3 tools/make_scene.py`
   (needs Pillow, numpy and opencv-python-headless). It cuts out the clouds and ground,
   fills the gaps, and regenerates `SceneLayout.java`.
 - Fonts: replace `title.ttf` / `ui.ttf` in `assets/obsidian/fonts/` with any TTF.
 - Button sounds: replace `hover.ogg` / `click.ogg` in `assets/obsidian/sounds/` (Ogg
   Vorbis; `ffmpeg -i in.mp3 -c:a libvorbis out.ogg`).
-- Glow, pill shape and mod icon: `python3 tools/make_sprites.py` (needs Pillow).
+- Mod icon: `python3 tools/make_sprites.py` (needs Pillow).
 - Frame rate: launch with `-Dobsidian.logFps=true` to print it to the log every 3 seconds.
 
 ## Build

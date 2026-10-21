@@ -1,13 +1,9 @@
 package dev.obsidian.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import dev.obsidian.ObsidianClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Identifier;
 
 import java.awt.Font;
@@ -57,7 +53,9 @@ public final class SmoothText {
 
 	/** Small vector icons, drawn as smoothly as the text. */
 	public enum Icon {
-		PLAY, PAUSE, SPEAKER, SPEAKER_MUTED
+		PLAY, PAUSE, SPEAKER, SPEAKER_MUTED,
+		/** A cut gem (the launch screen's centrepiece), and its facet lines drawn on top. */
+		GEM, GEM_FACETS
 	}
 
 	private record Key(Face face, String text, int px) {
@@ -144,6 +142,30 @@ public final class SmoothText {
 				g.fill(new java.awt.geom.RoundRectangle2D.Float(0.24f, 0.2f, 0.17f, 0.6f, 0.1f, 0.1f));
 				g.fill(new java.awt.geom.RoundRectangle2D.Float(0.59f, 0.2f, 0.17f, 0.6f, 0.1f, 0.1f));
 			}
+			case GEM -> {
+				java.awt.geom.Path2D.Float gem = new java.awt.geom.Path2D.Float();
+				gem.moveTo(0.3f, 0.16f);
+				gem.lineTo(0.7f, 0.16f);
+				gem.lineTo(0.92f, 0.4f);
+				gem.lineTo(0.5f, 0.88f);
+				gem.lineTo(0.08f, 0.4f);
+				gem.closePath();
+				g.fill(gem);
+			}
+			case GEM_FACETS -> {
+				g.setStroke(new java.awt.BasicStroke(0.022f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+				g.draw(new java.awt.geom.Line2D.Float(0.08f, 0.4f, 0.92f, 0.4f));
+				java.awt.geom.Path2D.Float lines = new java.awt.geom.Path2D.Float();
+				lines.moveTo(0.3f, 0.16f);
+				lines.lineTo(0.38f, 0.4f);
+				lines.lineTo(0.5f, 0.88f);
+				lines.lineTo(0.62f, 0.4f);
+				lines.lineTo(0.7f, 0.16f);
+				lines.moveTo(0.38f, 0.4f);
+				lines.lineTo(0.5f, 0.16f);
+				lines.lineTo(0.62f, 0.4f);
+				g.draw(lines);
+			}
 			case SPEAKER, SPEAKER_MUTED -> {
 				java.awt.geom.Path2D.Float body = new java.awt.geom.Path2D.Float();
 				body.moveTo(0.12f, 0.38f);
@@ -224,13 +246,5 @@ public final class SmoothText {
 		for (Entry e : ICONS.values()) MinecraftClient.getInstance().getTextureManager().destroyTexture(e.id());
 		CACHE.clear();
 		ICONS.clear();
-	}
-
-	/** A texture that is smoothed (linear filtering) when scaled, instead of pixelated. */
-	private static final class LinearTexture extends NativeImageBackedTexture {
-		LinearTexture(String name, NativeImage image) {
-			super(() -> name, image);
-			this.sampler = RenderSystem.getSamplerCache().get(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, false);
-		}
 	}
 }

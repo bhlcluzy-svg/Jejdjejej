@@ -20,9 +20,9 @@ public final class Theme {
 	public static final int TEXT = 0xFFEDE9FF;
 	public static final int TEXT_DIM = 0xFF9A93C0;
 
-	public static final Identifier GLOW = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/glow.png");
-	/** A white circle; its halves and middle make smooth pill shapes. */
-	public static final Identifier PILL = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/pill.png");
+	/** Soft glow and pill shapes; made in code (see RuntimeTextures) so they work while loading. */
+	public static final Identifier GLOW = RuntimeTextures.GLOW;
+	public static final Identifier PILL = RuntimeTextures.PILL;
 
 	private Theme() {
 	}
@@ -30,6 +30,7 @@ public final class Theme {
 	/** Draws part of a texture (u, v, rw, rh) stretched over (x, y, w, h), with sub-pixel placement. */
 	public static void region(DrawContext ctx, Identifier texture, float x, float y, float w, float h, float u, float v, int rw, int rh, int texW, int texH, int color) {
 		if (w <= 0f || h <= 0f) return;
+		RuntimeTextures.ensure();
 		ctx.getMatrices().pushMatrix();
 		ctx.getMatrices().translate(x, y);
 		ctx.getMatrices().scale(w / rw, h / rh);
@@ -47,6 +48,7 @@ public final class Theme {
 
 	/** Draws a whole texture stretched over (x, y, w, h), with sub-pixel placement so slow movement stays smooth. */
 	public static void image(DrawContext ctx, Identifier texture, float x, float y, float w, float h, int texW, int texH, int color) {
+		RuntimeTextures.ensure();
 		ctx.getMatrices().pushMatrix();
 		ctx.getMatrices().translate(x, y);
 		ctx.getMatrices().scale(w / texW, h / texH);

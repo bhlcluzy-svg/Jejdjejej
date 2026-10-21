@@ -92,7 +92,8 @@ public class ObsidianTitleScreen extends Screen {
 		float dt = lastFrame < 0 ? 0f : Math.min(0.1f, (now - lastFrame) / 1000f);
 		lastFrame = now;
 		time += dt;
-		if (client.getOverlay() == null) introStarted = true;
+		// Start as the launch screen fades, so it crossfades into the menu's own intro.
+		if (client.getOverlay() == null || LaunchScreen.isFading()) introStarted = true;
 		if (introStarted && introRunning()) {
 			introT += dt;
 			if (!introRunning()) ObsidianClient.introPlayed = true;

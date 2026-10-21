@@ -1,6 +1,7 @@
 package dev.obsidian.sound;
 
 import dev.obsidian.ObsidianClient;
+import dev.obsidian.gui.LaunchScreen;
 import dev.obsidian.mixin.SoundManagerAccessor;
 import dev.obsidian.mixin.SoundSystemAccessor;
 import net.minecraft.client.MinecraftClient;
@@ -49,7 +50,7 @@ public final class MenuMusic {
 
 	public static void tick(MinecraftClient client) {
 		boolean wanted = client.world == null
-			&& client.getOverlay() == null
+			&& (client.getOverlay() == null || LaunchScreen.isFading())
 			&& client.currentScreen != null
 			&& ObsidianClient.CONFIG != null
 			&& !ObsidianClient.CONFIG.vanillaMenu;
