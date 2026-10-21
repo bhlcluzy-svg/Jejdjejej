@@ -67,10 +67,6 @@ Settings are saved in `config/obsidian.json`.
 - Button sounds: replace `hover.ogg` / `click.ogg` in `assets/obsidian/sounds/` (Ogg
   Vorbis; `ffmpeg -i in.mp3 -c:a libvorbis out.ogg`).
 - Glow, pill shape and mod icon: `python3 tools/make_sprites.py` (needs Pillow).
-- Background: replace `tools/art/space.webp` and update the object boxes in
-  `tools/make_space.py`, then run `python3 tools/make_space.py` (needs Pillow, numpy and
-  opencv-python-headless). It cuts the listed objects into sprites, fills the holes, and
-  regenerates `SpaceLayout.java`.
 - Frame rate: launch with `-Dobsidian.logFps=true` to print it to the log every 3 seconds.
 
 ## Build
