@@ -55,7 +55,7 @@ public class ObsidianTitleScreen extends Screen {
 	protected void init() {
 		scene.prepare(width, height);
 		panels.clear();
-		logo = new LogoPanel(MathHelper.clamp(width * 0.072f, 22f, 40f));
+		logo = new LogoPanel(Theme.px(84f));
 		panels.add(logo);
 		bar = new BarPanel(width);
 		panels.add(bar);
@@ -244,11 +244,12 @@ public class ObsidianTitleScreen extends Screen {
 
 	/** The row of small pill buttons along the bottom. */
 	private class BarPanel extends Panel {
-		private static final int ROW_H = 16, GAP = 5;
+		private final int rowH = Theme.ipx(44), gap = Theme.ipx(12);
 		private static final String[] LABELS = {"Singleplayer", "Multiplayer", "Mods", "Options", "Quit Game"};
 
 		BarPanel(int screenW) {
-			super("bar", 0, ROW_H + 2);
+			super("bar", 0, 0);
+			h = rowH + 2;
 			List<Runnable> actions = List.of(
 				() -> client.setScreen(new SelectWorldScreen(ObsidianTitleScreen.this)),
 				() -> client.setScreen(new MultiplayerScreen(ObsidianTitleScreen.this)),
@@ -258,9 +259,9 @@ public class ObsidianTitleScreen extends Screen {
 
 			// Size each pill to its label; tighten the padding if the row would not fit.
 			int[] widths = new int[LABELS.length];
-			int total = GAP * (LABELS.length - 1);
+			int total = gap * (LABELS.length - 1);
 			for (int i = 0; i < LABELS.length; i++) {
-				widths[i] = ObsidianButton.pillWidth(LABELS[i], ROW_H);
+				widths[i] = ObsidianButton.pillWidth(LABELS[i], rowH);
 				total += widths[i];
 			}
 			int over = total - (screenW - 16);
@@ -270,15 +271,15 @@ public class ObsidianTitleScreen extends Screen {
 			for (int i = 0; i < LABELS.length; i++) {
 				String label = LABELS[i];
 				int bw = widths[i] - shrink;
-				buttons.add(new ObsidianButton(x, rowY, bw, ROW_H, () -> label, actions.get(i), ObsidianButton.Style.PILL));
-				x += bw + GAP;
+				buttons.add(new ObsidianButton(x, rowY, bw, rowH, () -> label, actions.get(i), ObsidianButton.Style.PILL));
+				x += bw + gap;
 			}
-			w = x - GAP;
+			w = x - gap;
 		}
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{(sw - w) / 2, sh - h - 30};
+			return new int[]{(sw - w) / 2, sh - h - Theme.ipx(78)};
 		}
 
 		@Override
@@ -288,11 +289,12 @@ public class ObsidianTitleScreen extends Screen {
 
 	/** Client name, Minecraft version and mod count, small, in the bottom-left corner. */
 	private class InfoPanel extends Panel {
-		private static final float NAME_SIZE = 8.5f, LINE_SIZE = 6f;
+		private final float nameSize = Theme.px(22), lineSize = Theme.px(15);
 
 		InfoPanel() {
-			super("info", 0, 17);
-			w = Math.round(Math.max(SmoothText.width(SmoothText.Face.UI, "OBSIDIAN CLIENT", NAME_SIZE), SmoothText.width(SmoothText.Face.UI, versionLine(), LINE_SIZE))) + 2;
+			super("info", 0, 0);
+			h = Math.round(nameSize + lineSize + Theme.px(5));
+			w = Math.round(Math.max(SmoothText.width(SmoothText.Face.UI, "OBSIDIAN CLIENT", nameSize), SmoothText.width(SmoothText.Face.UI, versionLine(), lineSize))) + 2;
 		}
 
 		private String versionLine() {
@@ -302,23 +304,23 @@ public class ObsidianTitleScreen extends Screen {
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{6, sh - h - 4};
+			return new int[]{Theme.ipx(16), sh - h - Theme.ipx(14)};
 		}
 
 		@Override
 		protected void renderContent(DrawContext ctx, TextRenderer tr, int mx, int my, float delta) {
-			SmoothText.draw(ctx, SmoothText.Face.UI, "OBSIDIAN CLIENT", x, y, NAME_SIZE, Theme.fade(0xFFFFFFFF, alpha), true);
-			SmoothText.draw(ctx, SmoothText.Face.UI, versionLine(), x, y + NAME_SIZE + 2f, LINE_SIZE, Theme.fade(0xFFDAD5EE, alpha), true);
+			SmoothText.draw(ctx, SmoothText.Face.UI, "OBSIDIAN CLIENT", x, y, nameSize, Theme.fade(0xFFFFFFFF, alpha), true);
+			SmoothText.draw(ctx, SmoothText.Face.UI, versionLine(), x, y + nameSize + Theme.px(4), lineSize, Theme.fade(0xFFDAD5EE, alpha), true);
 		}
 	}
 
 	private class VolumePanel extends Panel {
-		private static final int TRACK_X = 40, TRACK_RIGHT = 26;
+		private final int trackX = Theme.ipx(88), trackRight = Theme.ipx(56);
 		private boolean sliding;
 
 		VolumePanel() {
-			super("volume", 110, 14);
-			buttons.add(new ObsidianButton(2, 1, 34, 12, () -> ObsidianClient.CONFIG.muted ? "Muted" : "Music", () -> {
+			super("volume", Theme.ipx(230), Theme.ipx(34));
+			buttons.add(new ObsidianButton(Theme.ipx(4), Theme.ipx(4), Theme.ipx(76), Theme.ipx(26), () -> ObsidianClient.CONFIG.muted ? "Muted" : "Music", () -> {
 				ObsidianClient.CONFIG.muted = !ObsidianClient.CONFIG.muted;
 				ObsidianClient.CONFIG.save();
 			}, ObsidianButton.Style.ICON));
@@ -326,15 +328,15 @@ public class ObsidianTitleScreen extends Screen {
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{sw - w - 5, 5};
+			return new int[]{sw - w - Theme.ipx(14), Theme.ipx(14)};
 		}
 
 		private int trackStart() {
-			return x + TRACK_X;
+			return x + trackX;
 		}
 
 		private int trackEnd() {
-			return x + w - TRACK_RIGHT;
+			return x + w - trackRight;
 		}
 
 		private void setFromMouse(double mx) {
@@ -372,18 +374,21 @@ public class ObsidianTitleScreen extends Screen {
 			int s = trackStart(), e = trackEnd();
 			float v = ObsidianClient.CONFIG.effectiveVolume();
 			int knob = s + Math.round((e - s) * v);
-			Theme.pill(ctx, s, ty - 1f, e - s, 2, Theme.fade(0x60FFFFFF, alpha));
-			Theme.pill(ctx, s, ty - 1f, knob - s, 2, Theme.fade(0xFFFFFFFF, alpha));
-			Theme.pill(ctx, knob - 3, ty - 3, 6, 6, Theme.fade(0xFFFFFFFF, alpha));
+			float th = Theme.px(4), kn = Theme.px(12);
+			Theme.pill(ctx, s, ty - th / 2f, e - s, th, Theme.fade(0x60FFFFFF, alpha));
+			Theme.pill(ctx, s, ty - th / 2f, knob - s, th, Theme.fade(0xFFFFFFFF, alpha));
+			Theme.pill(ctx, knob - kn / 2f, ty - kn / 2f, kn, kn, Theme.fade(0xFFFFFFFF, alpha));
 			String pct = Math.round(v * 100) + "%";
-			SmoothText.draw(ctx, SmoothText.Face.UI, pct, x + w - 6 - SmoothText.width(SmoothText.Face.UI, pct, 5.5f), y + (h - 5.5f) / 2f, 5.5f, Theme.fade(0xFFE4E2F2, alpha), false);
+			float ps = Theme.px(13.5f);
+			SmoothText.draw(ctx, SmoothText.Face.UI, pct, x + w - Theme.px(12) - SmoothText.width(SmoothText.Face.UI, pct, ps), y + (h - ps) / 2f, ps, Theme.fade(0xFFE4E2F2, alpha), false);
 		}
 	}
 
 	private class VanillaPanel extends Panel {
 		VanillaPanel() {
-			super("vanilla", Math.round(SmoothText.width(SmoothText.Face.UI, "VANILLA MENU", 6.6f)) + 2, 11);
-			buttons.add(new ObsidianButton(0, 0, w, 11, () -> "Vanilla Menu", () -> {
+			super("vanilla", 0, Theme.ipx(26));
+			w = Math.round(SmoothText.width(SmoothText.Face.UI, "VANILLA MENU", h * 0.6f)) + 2;
+			buttons.add(new ObsidianButton(0, 0, w, h, () -> "Vanilla Menu", () -> {
 				ObsidianClient.CONFIG.vanillaMenu = true;
 				ObsidianClient.CONFIG.save();
 				client.setScreen(new TitleScreen());
@@ -392,7 +397,7 @@ public class ObsidianTitleScreen extends Screen {
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{sw - w - 6, sh - h - 5};
+			return new int[]{sw - w - Theme.ipx(16), sh - h - Theme.ipx(12)};
 		}
 
 		@Override

@@ -37,12 +37,12 @@ public class ObsidianButton {
 
 	/** Label size for PILL buttons of the given height, in GUI units. */
 	public static float pillTextSize(int height) {
-		return height * 0.46f;
+		return height * 0.42f;
 	}
 
 	/** Width a PILL button of the given height needs for its label. */
 	public static int pillWidth(String label, int height) {
-		return Math.round(SmoothText.width(SmoothText.Face.UI, label.toUpperCase(), pillTextSize(height)) + height * 1.4f);
+		return Math.round(SmoothText.width(SmoothText.Face.UI, label.toUpperCase(), pillTextSize(height)) + height * 1.3f);
 	}
 
 	public boolean contains(int px, int py, double mx, double my) {

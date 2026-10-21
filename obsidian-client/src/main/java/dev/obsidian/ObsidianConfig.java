@@ -21,6 +21,8 @@ public class ObsidianConfig {
 	public boolean muted = false;
 	/** Show the vanilla title screen instead of the Obsidian one. */
 	public boolean vanillaMenu = false;
+	/** Play a sound when the mouse moves onto a menu button. */
+	public boolean hoverSounds = false;
 	/** Play the intro animation the first time the menu opens each launch. */
 	public boolean playIntro = true;
 
@@ -29,7 +31,7 @@ public class ObsidianConfig {
 	/** Bumped when the menu layout changes, so old saved positions are dropped. */
 	public int layoutVersion = LAYOUT_VERSION;
 
-	private static final int LAYOUT_VERSION = 5;
+	private static final int LAYOUT_VERSION = 6;
 
 	public static ObsidianConfig load() {
 		if (Files.exists(FILE)) {

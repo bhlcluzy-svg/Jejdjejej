@@ -34,6 +34,15 @@ def save(img, name):
         f.write(MCMETA)
 
 
+def upscale(img):
+    """Doubles the picture's size: remove JPEG noise first, then enlarge and
+    sharpen gently, so it stays crisp instead of blocky on a 1080p screen."""
+    clean = cv2.fastNlMeansDenoisingColored(np.ascontiguousarray(img), None, 3, 3, 7, 21)
+    up = cv2.resize(clean, (img.shape[1] * SCALE, img.shape[0] * SCALE), interpolation=cv2.INTER_CUBIC)
+    blur = cv2.GaussianBlur(up, (0, 0), 1.6)
+    return cv2.addWeighted(up, 1.6, blur, -0.6, 0)
+
+
 def cloud_mask(img, box):
     """Clouds have a much higher green channel than the sky behind them."""
     x0, y0, x1, y1 = box
@@ -84,7 +93,7 @@ def ground_mask(img):
 def main():
     os.makedirs(OUT, exist_ok=True)
     src = np.asarray(Image.open(SRC).convert("RGB"))
-    big = cv2.resize(src, (src.shape[1] * SCALE, src.shape[0] * SCALE), interpolation=cv2.INTER_LANCZOS4)
+    big = upscale(src)
     H, W = big.shape[:2]
 
     # Ground: cut out with a soft edge.

@@ -13,16 +13,20 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
   smoothing, which looks jagged when scaled, so `SmoothText` rasterises each string with
   Java's font renderer at the exact screen pixel size and draws it with linear filtering.
 - **Animated background.** A calm sunset over a lake with an obsidian portal
-  (`tools/art/sunset.jpg`), split into sky, cloud and ground layers. The clouds drift,
-  the portal plays the real nether portal animation and gives off purple particles, the
+  (`tools/art/sunset.jpg`), split into sky, cloud and ground layers (cleaned of JPEG noise,
+  enlarged 2x and lightly sharpened). The clouds drift, a soft glow swirls inside the
+  portal and smooth purple particles drift out of it, the
   lake sparkles, the sunset glow breathes and warm specks of light float about. Moving the
   mouse pans the layers gently side to side at different depths. See
   `screenshots/obsidian-menu.mp4`.
 - **Same background everywhere.** Singleplayer, Multiplayer, Options and the other menus
   show the scene (blurred and darkened by Minecraft as usual) instead of the panorama.
 - **Buttons.** A row of small pill buttons along the bottom: Singleplayer, Multiplayer,
-  Mods, Options, Quit Game. Every button plays a soft hover and select sound, from the
-  "soft" set of [uisfx](https://uisfx.com) (CC0 public domain).
+  Mods, Options, Quit Game. Buttons click with the "minimal" sound from
+  [uisfx](https://uisfx.com) (CC0 public domain). Hover sounds are off; set
+  `"hoverSounds": true` in `config/obsidian.json` to turn them on.
+- **Same size on any setting.** Menu sizes are set in screen pixels (designed at 1080p)
+  rather than Minecraft's GUI units, so the menu looks the same whatever GUI Scale you use.
 - **Menu music.** `menu_music.ogg` starts with the intro and loops for as long as you are
   in the menus. It fades out when you join a world and back in when you leave. Vanilla menu
   music is muted while it plays.

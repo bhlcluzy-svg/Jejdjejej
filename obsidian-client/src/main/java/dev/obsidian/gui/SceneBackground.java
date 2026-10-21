@@ -1,7 +1,6 @@
 package dev.obsidian.gui;
 
 import dev.obsidian.ObsidianClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -25,7 +24,6 @@ public final class SceneBackground {
 	private static final Identifier SKY = scene("sky");
 	private static final Identifier GROUND = scene("ground");
 	private static final Identifier[] CLOUDS = {scene("cloud_0"), scene("cloud_1"), scene("cloud_2")};
-	private static final Identifier PORTAL = Identifier.ofVanilla("textures/block/nether_portal.png");
 	/** How far each layer slides at full mouse offset, as a fraction of the screen width. */
 	private static final float DEPTH_SKY = 0.008f, DEPTH_CLOUDS = 0.014f, DEPTH_GROUND = 0.03f, DEPTH_MOTES = 0.04f;
 	/** Vertical movement is kept small so it feels like a gentle side-to-side pan. */
@@ -151,32 +149,30 @@ public final class SceneBackground {
 		ctx.getMatrices().popMatrix();
 	}
 
-	/** The real animated nether portal texture inside the opening, a soft glow and drifting particles. */
+	/** A soft swirling glow inside the portal opening and smooth particles drifting out of it. */
 	private void renderPortal(DrawContext ctx, float gx, float gy, float s) {
 		float px = gx + SceneLayout.PORTAL_X * s, py = gy + SceneLayout.PORTAL_Y * s;
 		float pw = SceneLayout.PORTAL_W * s, ph = SceneLayout.PORTAL_H * s;
 		float pulse = 0.5f + 0.5f * MathHelper.sin(time * 1.6f);
 		Theme.glow(ctx, px + pw / 2f, py + ph / 2f, ph * (2.6f + 0.4f * pulse), Theme.fade(0xFFA35CFF, 0.30f + 0.15f * pulse));
 
-		int frame = (int) (time * 20f) % 32;
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(px, py);
-		ctx.getMatrices().scale(pw / 16f, ph / 32f);
-		// Two tiles stacked, so the swirl keeps its square pixels in the tall opening.
-		ctx.drawTexture(RenderPipelines.GUI_TEXTURED, PORTAL, 0, 0, 0f, frame * 16f, 16, 16, 16, 512, 0xA0FFFFFF);
-		ctx.drawTexture(RenderPipelines.GUI_TEXTURED, PORTAL, 0, 16, 0f, frame * 16f, 16, 16, 16, 512, 0xA0FFFFFF);
-		ctx.getMatrices().popMatrix();
+		// Swirl: a few soft blobs circling inside the opening, kept within it by a scissor.
+		ctx.enableScissor(Math.round(px), Math.round(py), Math.round(px + pw), Math.round(py + ph));
+		for (int i = 0; i < 5; i++) {
+			float ang = time * (0.9f + i * 0.17f) + i * 1.3f;
+			float bx = px + pw / 2f + MathHelper.cos(ang) * pw * 0.28f;
+			float by = py + ph / 2f + MathHelper.sin(ang * 0.8f) * ph * 0.32f;
+			int c = i % 2 == 0 ? 0xFFD9A8FF : 0xFF8C5CFF;
+			Theme.glow(ctx, bx, by, pw * (1.1f + 0.2f * MathHelper.sin(time + i)), Theme.fade(c, 0.35f));
+		}
+		ctx.disableScissor();
 
 		for (PortalBit b : portalBits) b.render(ctx, px, py, pw, ph);
 	}
 
-	/** A crisp square centred on (x, y), placed with sub-pixel precision. */
-	private static void square(DrawContext ctx, float x, float y, float w, float h, int color) {
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(x - w / 2f, y - h / 2f);
-		ctx.getMatrices().scale(w, h);
-		ctx.fill(0, 0, 1, 1, color);
-		ctx.getMatrices().popMatrix();
+	/** A soft-edged streak centred on (x, y): the glow sprite stretched to w by h. */
+	private static void streak(DrawContext ctx, float x, float y, float w, float h, int color) {
+		Theme.image(ctx, Theme.GLOW, x - w / 2f, y - h / 2f, w, h, 128, 128, color);
 	}
 
 	// ------------------------------------------------------------- pieces
@@ -208,8 +204,8 @@ public final class SceneBackground {
 
 		void render(DrawContext ctx, float s) {
 			float a = MathHelper.sin(life * MathHelper.PI);
-			square(ctx, coverX + x * s + shiftX(DEPTH_SKY), coverY + y * s + shiftY(DEPTH_SKY),
-				len * s, Math.max(0.6f, 2.5f * s), Theme.fade(0xFFFFF0F6, 0.55f * a));
+			streak(ctx, coverX + x * s + shiftX(DEPTH_SKY), coverY + y * s + shiftY(DEPTH_SKY),
+				len * s * 1.4f, Math.max(1.2f, 6f * s), Theme.fade(0xFFFFF0F6, 0.75f * a));
 		}
 	}
 
@@ -240,8 +236,8 @@ public final class SceneBackground {
 
 		void render(DrawContext ctx, float px, float py, float pw, float ph) {
 			float a = MathHelper.sin(life * MathHelper.PI);
-			float sz = Math.max(0.7f, pw * size);
-			square(ctx, px + x * pw, py + y * ph, sz, sz, Theme.fade(0xFFC27BFF, 0.85f * a));
+			float sz = Math.max(1.5f, pw * size * 2.2f);
+			Theme.glow(ctx, px + x * pw, py + y * ph, sz, Theme.fade(0xFFD2A0FF, 0.9f * a));
 		}
 	}
 

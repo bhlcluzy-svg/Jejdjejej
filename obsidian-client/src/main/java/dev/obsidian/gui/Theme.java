@@ -55,6 +55,21 @@ public final class Theme {
 	}
 
 	/** Multiplies a colour's alpha by {@code alpha} (0 to 1). */
+	/**
+	 * Converts a size in screen pixels at 1080p into GUI units. Sizing the menu
+	 * this way keeps it the same size on screen whatever the GUI Scale setting is,
+	 * and scales it with the window like a normal app.
+	 */
+	public static float px(float pixelsAt1080p) {
+		net.minecraft.client.util.Window window = net.minecraft.client.MinecraftClient.getInstance().getWindow();
+		float screenScale = window.getFramebufferHeight() / 1080f;
+		return pixelsAt1080p * screenScale / Math.max(1, window.getScaleFactor());
+	}
+
+	public static int ipx(float pixelsAt1080p) {
+		return Math.max(1, Math.round(px(pixelsAt1080p)));
+	}
+
 	public static int fade(int color, float alpha) {
 		int a = (int) ((color >>> 24) * MathHelper.clamp(alpha, 0f, 1f));
 		return (color & 0x00FFFFFF) | (a << 24);
