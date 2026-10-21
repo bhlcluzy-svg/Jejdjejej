@@ -22,7 +22,7 @@ public class ObsidianConfig {
 	/** Show the vanilla title screen instead of the Obsidian one. */
 	public boolean vanillaMenu = false;
 	/** Play a sound when the mouse moves onto a menu button. */
-	public boolean hoverSounds = false;
+	public boolean buttonHoverSound = true;
 	/** Play the intro animation the first time the menu opens each launch. */
 	public boolean playIntro = true;
 

@@ -22,9 +22,10 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
 - **Same background everywhere.** Singleplayer, Multiplayer, Options and the other menus
   show the scene (blurred and darkened by Minecraft as usual) instead of the panorama.
 - **Buttons.** A row of small pill buttons along the bottom: Singleplayer, Multiplayer,
-  Mods, Options, Quit Game. Buttons click with the "minimal" sound from
-  [uisfx](https://uisfx.com) (CC0 public domain). Hover sounds are off; set
-  `"hoverSounds": true` in `config/obsidian.json` to turn them on.
+  Mods, Options, Quit Game. Buttons play the "zen" hover and focus sounds from
+  [uisfx](https://uisfx.com) (CC0 public domain): a soft tick when the mouse moves onto a
+  button and a high, soft click when you press it. Set `"buttonHoverSound": false` in
+  `config/obsidian.json` to turn the hover tick off.
 - **Same size on any setting.** Menu sizes are set in screen pixels (designed at 1080p)
   rather than Minecraft's GUI units, so the menu looks the same whatever GUI Scale you use.
 - **Menu music.** `menu_music.ogg` starts with the intro and loops for as long as you are
