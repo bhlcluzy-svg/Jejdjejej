@@ -1,20 +1,16 @@
 package dev.obsidian.gui;
 
 import dev.obsidian.ObsidianClient;
-import dev.obsidian.ObsidianConfig;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.network.ServerAddress;
-import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
@@ -246,16 +242,13 @@ public class ObsidianTitleScreen extends Screen {
 		}
 	}
 
-	/**
-	 * The row of slim pill buttons along the bottom. When you have played on a
-	 * server, a small "Rejoin" pill sits above the row.
-	 */
+	/** The row of small pill buttons along the bottom. */
 	private class BarPanel extends Panel {
-		private static final int ROW_H = 16, GAP = 5, QUICK_H = 13;
+		private static final int ROW_H = 16, GAP = 5;
 		private static final String[] LABELS = {"Singleplayer", "Multiplayer", "Mods", "Options", "Quit Game"};
 
 		BarPanel(int screenW) {
-			super("bar", 0, QUICK_H + 5 + ROW_H + 2);
+			super("bar", 0, ROW_H + 2);
 			List<Runnable> actions = List.of(
 				() -> client.setScreen(new SelectWorldScreen(ObsidianTitleScreen.this)),
 				() -> client.setScreen(new MultiplayerScreen(ObsidianTitleScreen.this)),
@@ -273,7 +266,7 @@ public class ObsidianTitleScreen extends Screen {
 			int over = total - (screenW - 16);
 			int shrink = over > 0 ? Math.min(10, (over + LABELS.length - 1) / LABELS.length) : 0;
 			int x = 0;
-			int rowY = QUICK_H + 5;
+			int rowY = 0;
 			for (int i = 0; i < LABELS.length; i++) {
 				String label = LABELS[i];
 				int bw = widths[i] - shrink;
@@ -281,13 +274,6 @@ public class ObsidianTitleScreen extends Screen {
 				x += bw + GAP;
 			}
 			w = x - GAP;
-
-			String server = ObsidianClient.CONFIG.lastServerName;
-			if (server != null && !server.isBlank() && ObsidianClient.CONFIG.lastServerAddress != null) {
-				String label = "Rejoin " + (server.length() > 24 ? server.substring(0, 23) + "\u2026" : server);
-				int qw = Math.min(w, ObsidianButton.pillWidth(label, QUICK_H));
-				buttons.add(new ObsidianButton((w - qw) / 2, 0, qw, QUICK_H, () -> label, ObsidianTitleScreen.this::quickJoin, ObsidianButton.Style.PILL));
-			}
 		}
 
 		@Override
@@ -298,16 +284,6 @@ public class ObsidianTitleScreen extends Screen {
 		@Override
 		protected void renderContent(DrawContext ctx, TextRenderer tr, int mx, int my, float delta) {
 		}
-	}
-
-	private void quickJoin() {
-		ObsidianConfig config = ObsidianClient.CONFIG;
-		if (config.lastServerAddress == null || config.lastServerAddress.isBlank()) {
-			client.setScreen(new MultiplayerScreen(this));
-			return;
-		}
-		ServerInfo info = new ServerInfo(config.lastServerName, config.lastServerAddress, ServerInfo.ServerType.OTHER);
-		ConnectScreen.connect(this, client, ServerAddress.parse(info.address), info, false, null);
 	}
 
 	/** Client name, Minecraft version and mod count, small, in the bottom-left corner. */

@@ -24,10 +24,6 @@ public class ObsidianConfig {
 	/** Play the intro animation the first time the menu opens each launch. */
 	public boolean playIntro = true;
 
-	/** Last server joined, for the Quick Join button. */
-	public String lastServerName = null;
-	public String lastServerAddress = null;
-
 	/** Panel id -> {x, y} as fractions of the screen size, so layouts survive window resizes. */
 	public Map<String, float[]> panels = new HashMap<>();
 	/** Bumped when the menu layout changes, so old saved positions are dropped. */

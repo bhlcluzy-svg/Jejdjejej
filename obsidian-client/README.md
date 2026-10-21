@@ -21,8 +21,7 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
 - **Same background everywhere.** Singleplayer, Multiplayer, Options and the other menus
   show the scene (blurred and darkened by Minecraft as usual) instead of the panorama.
 - **Buttons.** A row of small pill buttons along the bottom: Singleplayer, Multiplayer,
-  Mods, Options, Quit Game. Once you have played on a server, a small "Rejoin <server>"
-  pill appears above them. Every button plays a soft hover and select sound, from the
+  Mods, Options, Quit Game. Every button plays a soft hover and select sound, from the
   "soft" set of [uisfx](https://uisfx.com) (CC0 public domain).
 - **Menu music.** `menu_music.ogg` starts with the intro and loops for as long as you are
   in the menus. It fades out when you join a world and back in when you leave. Vanilla menu
