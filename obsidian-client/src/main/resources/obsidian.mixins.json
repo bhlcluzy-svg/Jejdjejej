@@ -4,9 +4,13 @@
   "package": "dev.obsidian.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ConnectScreenMixin",
     "InactivityFpsLimiterMixin",
+    "LevelLoadingScreenMixin",
+    "MessageScreenMixin",
     "MinecraftClientMixin",
     "MusicTrackerMixin",
+    "ProgressScreenMixin",
     "ScreenMixin",
     "SoundManagerAccessor",
     "SoundSystemAccessor",

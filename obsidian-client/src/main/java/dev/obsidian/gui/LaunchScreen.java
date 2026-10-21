@@ -17,6 +17,14 @@ public final class LaunchScreen {
 	private static final String NAME = "Obsidian";
 	private static long startMs = -1;
 	private static long lastMs = -1;
+	/**
+	 * Animation time. Loading makes the game freeze for a moment now and then;
+	 * time only advances by up to one frame's worth per frame, so the animation
+	 * pauses through a freeze instead of jumping ahead.
+	 */
+	private static float animTime;
+	/** Longest step the animation takes in one frame, in seconds. */
+	private static final float MAX_STEP = 1f / 30f;
 	private static float shownProgress;
 	private static boolean fading;
 
@@ -28,7 +36,12 @@ public final class LaunchScreen {
 
 	/** True once the intro animation has played, so loading may be allowed to finish. */
 	public static boolean introDone() {
-		return startMs >= 0 && (Util.getMeasuringTimeMs() - startMs) / 1000f >= INTRO_SECONDS;
+		return startMs >= 0 && animTime >= INTRO_SECONDS;
+	}
+
+	/** True if the launch screen was shown this session (the menu then skips its own fade from black). */
+	public static boolean wasShown() {
+		return startMs >= 0;
 	}
 
 	/** True once loading is done and the launch screen has started fading into the menu. */
@@ -43,9 +56,10 @@ public final class LaunchScreen {
 	public static void render(DrawContext ctx, float progress, float doneFor) {
 		long now = Util.getMeasuringTimeMs();
 		if (startMs < 0) startMs = now;
-		float dt = lastMs < 0 ? 0f : Math.min(0.1f, (now - lastMs) / 1000f);
+		float dt = lastMs < 0 ? 0f : Math.min(MAX_STEP, (now - lastMs) / 1000f);
 		lastMs = now;
-		float t = (now - startMs) / 1000f;
+		animTime += dt;
+		float t = animTime;
 
 		// Fade out over the second after loading finishes, revealing the menu underneath.
 		float alpha = doneFor < 1f ? 1f : 1f - MathHelper.clamp(doneFor - 1f, 0f, 1f);

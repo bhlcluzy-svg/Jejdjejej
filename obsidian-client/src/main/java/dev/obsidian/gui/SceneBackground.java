@@ -67,6 +67,14 @@ public final class SceneBackground {
 		return coverY + coverH * 0.25f;
 	}
 
+	/** Makes sure the scene's images are loaded, so the first frame that draws them does not stall. */
+	public void preload() {
+		net.minecraft.client.texture.TextureManager textures = net.minecraft.client.MinecraftClient.getInstance().getTextureManager();
+		textures.getTexture(SKY);
+		textures.getTexture(GROUND);
+		for (Identifier cloud : CLOUDS) textures.getTexture(cloud);
+	}
+
 	/** Lays the scene out for a screen size; called when a screen opens. */
 	public void prepare(int w, int h) {
 		if (w != width || h != height) resize(w, h);
@@ -99,7 +107,7 @@ public final class SceneBackground {
 	private void tick(int w, int h, int mx, int my) {
 		if (w != width || h != height) resize(w, h);
 		long now = Util.getMeasuringTimeNano();
-		float dt = lastFrame < 0 ? 0f : Math.min(0.1f, (now - lastFrame) / 1e9f);
+		float dt = lastFrame < 0 ? 0f : Math.min(1f / 30f, (now - lastFrame) / 1e9f);
 		lastFrame = now;
 		time += dt;
 		mouseX = mx;

@@ -55,6 +55,9 @@ public class ObsidianTitleScreen extends Screen {
 	@Override
 	protected void init() {
 		scene.prepare(width, height);
+		// Load the big background images now (while the launch screen still covers
+		// everything), not on the first frame of the fade, where it would stutter.
+		scene.preload();
 		panels.clear();
 		logo = new LogoPanel(Theme.px(108f));
 		panels.add(logo);
@@ -89,7 +92,8 @@ public class ObsidianTitleScreen extends Screen {
 
 	private void advanceClock() {
 		long now = Util.getMeasuringTimeNano() / 1_000_000L;
-		float dt = lastFrame < 0 ? 0f : Math.min(0.1f, (now - lastFrame) / 1000f);
+		// Capped at one frame's worth, so a hitch pauses the intro rather than skipping part of it.
+		float dt = lastFrame < 0 ? 0f : Math.min(1f / 30f, (now - lastFrame) / 1000f);
 		lastFrame = now;
 		time += dt;
 		// Start as the launch screen fades, so it crossfades into the menu's own intro.
@@ -106,7 +110,8 @@ public class ObsidianTitleScreen extends Screen {
 		scene.render(ctx, width, height, mx, my);
 		// Darken the bottom a little so the buttons and info read clearly.
 		ctx.fillGradient(0, height * 3 / 5, width, height, 0x00000000, 0x90100A1E);
-		float curtain = 1f - Theme.easeInOut((introT - 0.2f) / 1.3f);
+		// After the launch screen, its own fade is the transition, so skip the fade from black.
+		float curtain = LaunchScreen.wasShown() ? 0f : 1f - Theme.easeInOut((introT - 0.2f) / 1.3f);
 		if (curtain > 0f) ctx.fill(0, 0, width, height, Theme.fade(0xFF000000, curtain));
 	}
 

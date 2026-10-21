@@ -1,6 +1,7 @@
 package dev.obsidian.mixin;
 
 import dev.obsidian.ObsidianClient;
+import dev.obsidian.gui.JoinScreens;
 import dev.obsidian.gui.SceneBackground;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -27,6 +28,14 @@ public abstract class ScreenMixin {
 	 * the rotating panorama; draw the Obsidian scene instead. Vanilla still blurs
 	 * and darkens it on top, so the lists stay readable.
 	 */
+	/** Joining screens (connecting, progress, reconfiguring) get the Obsidian scene behind them. */
+	@Inject(method = "renderBackground", at = @At("HEAD"), cancellable = true)
+	private void obsidian$joinBackground(DrawContext context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
+		if (!JoinScreens.styled((Screen) (Object) this)) return;
+		JoinScreens.background(context, width, height);
+		ci.cancel();
+	}
+
 	@Inject(method = "renderPanoramaBackground", at = @At("HEAD"), cancellable = true)
 	private void obsidian$sceneBackground(DrawContext context, float deltaTicks, CallbackInfo ci) {
 		if (client == null || client.world != null || ObsidianClient.CONFIG == null || ObsidianClient.CONFIG.vanillaMenu) return;
