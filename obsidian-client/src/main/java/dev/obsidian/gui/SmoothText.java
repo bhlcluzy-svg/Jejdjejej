@@ -55,7 +55,15 @@ public final class SmoothText {
 		}
 	}
 
+	/** Small vector icons, drawn as smoothly as the text. */
+	public enum Icon {
+		PLAY, PAUSE, SPEAKER, SPEAKER_MUTED
+	}
+
 	private record Key(Face face, String text, int px) {
+	}
+
+	private record IconKey(Icon icon, int px) {
 	}
 
 	/** A rasterised string: its texture, size in pixels, and where the text sits inside it. */
@@ -64,6 +72,7 @@ public final class SmoothText {
 
 	private static final int MAX_ENTRIES = 256;
 	private static final Map<Key, Entry> CACHE = new HashMap<>();
+	private static final Map<IconKey, Entry> ICONS = new HashMap<>();
 	private static int nextId;
 
 	private SmoothText() {
@@ -100,6 +109,71 @@ public final class SmoothText {
 
 	public static void drawCentered(DrawContext ctx, Face face, String text, float cx, float y, float size, int color, boolean shadow) {
 		draw(ctx, face, text, cx - width(face, text, size) / 2f, y, size, color, shadow);
+	}
+
+	/** Draws an icon filling a size-by-size square (GUI units) with its top-left at (x, y). */
+	public static void icon(DrawContext ctx, Icon icon, float x, float y, float size, int color) {
+		if ((color >>> 24) < 4) return;
+		int scale = guiScale();
+		int px = Math.max(4, Math.round(size * scale));
+		Entry e = ICONS.computeIfAbsent(new IconKey(icon, px), k -> rasterIcon(k.icon(), k.px()));
+		float dx = Math.round(x * scale) / (float) scale, dy = Math.round(y * scale) / (float) scale;
+		Theme.region(ctx, e.id(), dx, dy, e.texW() / (float) scale, e.texH() / (float) scale, 0f, 0f, e.texW(), e.texH(), e.texW(), e.texH(), color);
+	}
+
+	private static Entry rasterIcon(Icon icon, int px) {
+		BufferedImage img = new BufferedImage(px, px, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+		g.setColor(java.awt.Color.WHITE);
+		g.scale(px, px);  // draw in a 0..1 square
+		java.awt.BasicStroke round = new java.awt.BasicStroke(0.085f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND);
+		switch (icon) {
+			case PLAY -> {
+				java.awt.geom.Path2D.Float tri = new java.awt.geom.Path2D.Float();
+				tri.moveTo(0.32f, 0.2f);
+				tri.lineTo(0.32f, 0.8f);
+				tri.lineTo(0.8f, 0.5f);
+				tri.closePath();
+				g.fill(tri);
+				g.setStroke(new java.awt.BasicStroke(0.08f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+				g.draw(tri);
+			}
+			case PAUSE -> {
+				g.fill(new java.awt.geom.RoundRectangle2D.Float(0.24f, 0.2f, 0.17f, 0.6f, 0.1f, 0.1f));
+				g.fill(new java.awt.geom.RoundRectangle2D.Float(0.59f, 0.2f, 0.17f, 0.6f, 0.1f, 0.1f));
+			}
+			case SPEAKER, SPEAKER_MUTED -> {
+				java.awt.geom.Path2D.Float body = new java.awt.geom.Path2D.Float();
+				body.moveTo(0.12f, 0.38f);
+				body.lineTo(0.3f, 0.38f);
+				body.lineTo(0.52f, 0.18f);
+				body.lineTo(0.52f, 0.82f);
+				body.lineTo(0.3f, 0.62f);
+				body.lineTo(0.12f, 0.62f);
+				body.closePath();
+				g.fill(body);
+				g.setStroke(new java.awt.BasicStroke(0.05f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+				g.draw(body);
+				g.setStroke(round);
+				if (icon == Icon.SPEAKER) {
+					g.draw(new java.awt.geom.Arc2D.Float(0.42f, 0.32f, 0.24f, 0.36f, -50, 100, java.awt.geom.Arc2D.OPEN));
+					g.draw(new java.awt.geom.Arc2D.Float(0.42f, 0.18f, 0.44f, 0.64f, -50, 100, java.awt.geom.Arc2D.OPEN));
+				} else {
+					g.draw(new java.awt.geom.Line2D.Float(0.64f, 0.36f, 0.88f, 0.64f));
+					g.draw(new java.awt.geom.Line2D.Float(0.88f, 0.36f, 0.64f, 0.64f));
+				}
+			}
+		}
+		g.dispose();
+		NativeImage image = new NativeImage(px, px, false);
+		for (int y = 0; y < px; y++) {
+			for (int x = 0; x < px; x++) image.setColorArgb(x, y, img.getRGB(x, y));
+		}
+		Identifier id = Identifier.of(ObsidianClient.MOD_ID, "smooth_icon/" + nextId++);
+		MinecraftClient.getInstance().getTextureManager().registerTexture(id, new LinearTexture(id.toString(), image));
+		return new Entry(id, px, px, 0, px, px);
 	}
 
 	private static Entry entry(Face face, String text, int px) {
@@ -147,7 +221,9 @@ public final class SmoothText {
 	/** Drops every cached string; they are rebuilt on next use. */
 	public static void clear() {
 		for (Entry e : CACHE.values()) MinecraftClient.getInstance().getTextureManager().destroyTexture(e.id());
+		for (Entry e : ICONS.values()) MinecraftClient.getInstance().getTextureManager().destroyTexture(e.id());
 		CACHE.clear();
+		ICONS.clear();
 	}
 
 	/** A texture that is smoothed (linear filtering) when scaled, instead of pixelated. */

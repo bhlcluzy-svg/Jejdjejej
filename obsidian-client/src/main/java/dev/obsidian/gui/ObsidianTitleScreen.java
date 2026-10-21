@@ -1,6 +1,7 @@
 package dev.obsidian.gui;
 
 import dev.obsidian.ObsidianClient;
+import dev.obsidian.sound.MenuMusic;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Click;
@@ -55,7 +56,7 @@ public class ObsidianTitleScreen extends Screen {
 	protected void init() {
 		scene.prepare(width, height);
 		panels.clear();
-		logo = new LogoPanel(Theme.px(84f));
+		logo = new LogoPanel(Theme.px(108f));
 		panels.add(logo);
 		bar = new BarPanel(width);
 		panels.add(bar);
@@ -244,7 +245,7 @@ public class ObsidianTitleScreen extends Screen {
 
 	/** The row of small pill buttons along the bottom. */
 	private class BarPanel extends Panel {
-		private final int rowH = Theme.ipx(44), gap = Theme.ipx(12);
+		private final int rowH = Theme.ipx(54), gap = Theme.ipx(14);
 		private static final String[] LABELS = {"Singleplayer", "Multiplayer", "Mods", "Options", "Quit Game"};
 
 		BarPanel(int screenW) {
@@ -279,7 +280,7 @@ public class ObsidianTitleScreen extends Screen {
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{(sw - w) / 2, sh - h - Theme.ipx(78)};
+			return new int[]{(sw - w) / 2, sh - h - Theme.ipx(90)};
 		}
 
 		@Override
@@ -315,15 +316,18 @@ public class ObsidianTitleScreen extends Screen {
 	}
 
 	private class VolumePanel extends Panel {
-		private final int trackX = Theme.ipx(88), trackRight = Theme.ipx(56);
+		private final int trackX = Theme.ipx(96), trackRight = Theme.ipx(66);
 		private boolean sliding;
 
 		VolumePanel() {
-			super("volume", Theme.ipx(230), Theme.ipx(34));
-			buttons.add(new ObsidianButton(Theme.ipx(4), Theme.ipx(4), Theme.ipx(76), Theme.ipx(26), () -> ObsidianClient.CONFIG.muted ? "Muted" : "Music", () -> {
+			super("volume", Theme.ipx(300), Theme.ipx(44));
+			int b = Theme.ipx(34), m = Theme.ipx(5);
+			// Pause stops the song where it is; mute keeps it playing silently.
+			buttons.add(ObsidianButton.glyph(m, m, b, () -> MenuMusic.isPaused() ? SmoothText.Icon.PLAY : SmoothText.Icon.PAUSE, MenuMusic::togglePause));
+			buttons.add(ObsidianButton.glyph(m * 2 + b, m, b, () -> ObsidianClient.CONFIG.muted ? SmoothText.Icon.SPEAKER_MUTED : SmoothText.Icon.SPEAKER, () -> {
 				ObsidianClient.CONFIG.muted = !ObsidianClient.CONFIG.muted;
 				ObsidianClient.CONFIG.save();
-			}, ObsidianButton.Style.ICON));
+			}));
 		}
 
 		@Override
@@ -374,19 +378,19 @@ public class ObsidianTitleScreen extends Screen {
 			int s = trackStart(), e = trackEnd();
 			float v = ObsidianClient.CONFIG.effectiveVolume();
 			int knob = s + Math.round((e - s) * v);
-			float th = Theme.px(4), kn = Theme.px(12);
+			float th = Theme.px(5), kn = Theme.px(15);
 			Theme.pill(ctx, s, ty - th / 2f, e - s, th, Theme.fade(0x60FFFFFF, alpha));
 			Theme.pill(ctx, s, ty - th / 2f, knob - s, th, Theme.fade(0xFFFFFFFF, alpha));
 			Theme.pill(ctx, knob - kn / 2f, ty - kn / 2f, kn, kn, Theme.fade(0xFFFFFFFF, alpha));
 			String pct = Math.round(v * 100) + "%";
-			float ps = Theme.px(13.5f);
+			float ps = Theme.px(16f);
 			SmoothText.draw(ctx, SmoothText.Face.UI, pct, x + w - Theme.px(12) - SmoothText.width(SmoothText.Face.UI, pct, ps), y + (h - ps) / 2f, ps, Theme.fade(0xFFE4E2F2, alpha), false);
 		}
 	}
 
 	private class VanillaPanel extends Panel {
 		VanillaPanel() {
-			super("vanilla", 0, Theme.ipx(26));
+			super("vanilla", 0, Theme.ipx(32));
 			w = Math.round(SmoothText.width(SmoothText.Face.UI, "VANILLA MENU", h * 0.6f)) + 2;
 			buttons.add(new ObsidianButton(0, 0, w, h, () -> "Vanilla Menu", () -> {
 				ObsidianClient.CONFIG.vanillaMenu = true;

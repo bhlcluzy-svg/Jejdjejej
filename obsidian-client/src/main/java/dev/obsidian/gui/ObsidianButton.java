@@ -14,14 +14,17 @@ public class ObsidianButton {
 		PILL,
 		/** Just text, brightening and underlined on hover (like "Vanilla Menu"). */
 		TEXT,
-		/** A small text button with a faint pill on hover (the volume mute). */
-		ICON
+		/** A small text button with a faint pill on hover. */
+		ICON,
+		/** A round button showing a vector icon (pause, mute). */
+		GLYPH
 	}
 
 	public final int dx, dy, w, h;
 	private final Supplier<String> label;
 	private final Runnable action;
 	private final Style style;
+	private Supplier<SmoothText.Icon> glyph;
 	private float hover;
 	private boolean wasOver;
 
@@ -33,6 +36,13 @@ public class ObsidianButton {
 		this.label = label;
 		this.action = action;
 		this.style = style;
+	}
+
+	/** A round icon button; the icon can change (play/pause, speaker/muted). */
+	public static ObsidianButton glyph(int dx, int dy, int size, Supplier<SmoothText.Icon> icon, Runnable action) {
+		ObsidianButton b = new ObsidianButton(dx, dy, size, size, () -> "", action, Style.GLYPH);
+		b.glyph = icon;
+		return b;
 	}
 
 	/** Label size for PILL buttons of the given height, in GUI units. */
@@ -59,6 +69,7 @@ public class ObsidianButton {
 			case PILL -> renderPill(ctx, tr, x, y, alpha);
 			case TEXT -> renderText(ctx, tr, x, y, alpha);
 			case ICON -> renderIcon(ctx, tr, x, y, alpha);
+			case GLYPH -> renderGlyph(ctx, x, y, alpha);
 		}
 	}
 
@@ -82,6 +93,13 @@ public class ObsidianButton {
 		if (hover > 0.01f) {
 			Theme.region(ctx, Theme.PILL, tx, y + (h + size) / 2f + 1f, tw * hover, 0.75f, 31f, 0f, 2, 64, 64, 64, Theme.fade(0xFFFFFFFF, 0.8f * alpha * hover));
 		}
+	}
+
+	private void renderGlyph(DrawContext ctx, int x, int y, float alpha) {
+		Theme.pill(ctx, x, y, w, h, Theme.fade(Theme.lerpColor(hover, 0x18FFFFFF, 0x40FFFFFF), alpha));
+		float size = h * 0.62f;
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFE2DEF2, 0xFFFFFFFF), alpha);
+		SmoothText.icon(ctx, glyph.get(), x + (w - size) / 2f, y + (h - size) / 2f, size, color);
 	}
 
 	private void renderIcon(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {

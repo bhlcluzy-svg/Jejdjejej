@@ -35,12 +35,18 @@ def save(img, name):
 
 
 def upscale(img):
-    """Doubles the picture's size: remove JPEG noise first, then enlarge and
-    sharpen gently, so it stays crisp instead of blocky on a 1080p screen."""
-    clean = cv2.fastNlMeansDenoisingColored(np.ascontiguousarray(img), None, 3, 3, 7, 21)
+    """Doubles the picture's size smoothly: remove JPEG noise, enlarge, then an
+    edge-preserving smooth so blocky compression steps do not show at 1080p."""
+    clean = cv2.fastNlMeansDenoisingColored(np.ascontiguousarray(img), None, 6, 6, 7, 21)
     up = cv2.resize(clean, (img.shape[1] * SCALE, img.shape[0] * SCALE), interpolation=cv2.INTER_CUBIC)
-    blur = cv2.GaussianBlur(up, (0, 0), 1.6)
-    return cv2.addWeighted(up, 1.6, blur, -0.6, 0)
+    return cv2.bilateralFilter(up, 7, 28, 5)
+
+
+def smooth_alpha(mask, size):
+    """Enlarges a 0/1 mask into a soft-edged alpha without staircase steps."""
+    soft = cv2.GaussianBlur(mask.astype(np.float32), (0, 0), 0.8)
+    up = cv2.resize(soft, size, interpolation=cv2.INTER_CUBIC)
+    return np.clip(up, 0, 1)
 
 
 def cloud_mask(img, box):
@@ -98,8 +104,8 @@ def main():
 
     # Ground: cut out with a soft edge.
     gm_small = ground_mask(src)
-    gm = cv2.resize(gm_small, (W, H), interpolation=cv2.INTER_NEAREST)
-    soft = cv2.GaussianBlur(gm.astype(np.float32), (5, 5), 0)
+    soft = smooth_alpha(gm_small, (W, H))
+    gm = (soft > 0.5).astype(np.uint8)
     save(Image.fromarray(np.dstack([big, (soft * 255).astype(np.uint8)]), "RGBA"), "ground")
 
     # Clouds.
@@ -110,9 +116,9 @@ def main():
         cm = cloud_mask(src, box)
         cover.append(cm.mean())
         x0, y0, x1, y1 = [v * SCALE for v in box]
-        m = cv2.resize(cm, (x1 - x0, y1 - y0), interpolation=cv2.INTER_NEAREST)
-        m = cv2.dilate(m, np.ones((5, 5), np.uint8))
-        a = cv2.GaussianBlur(m.astype(np.float32), (7, 7), 0)
+        grown = cv2.dilate(cm, np.ones((3, 3), np.uint8))
+        a = smooth_alpha(grown, (x1 - x0, y1 - y0))
+        m = (a > 0.5).astype(np.uint8)
         save(Image.fromarray(np.dstack([big[y0:y1, x0:x1], (a * 255).astype(np.uint8)]), "RGBA"), f"cloud_{i}")
         holes[y0:y1, x0:x1] |= cv2.dilate(m, np.ones((9, 9), np.uint8))
         clouds.append((x0, y0, x1 - x0, y1 - y0))

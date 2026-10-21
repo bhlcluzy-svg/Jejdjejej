@@ -14,7 +14,7 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
   Java's font renderer at the exact screen pixel size and draws it with linear filtering.
 - **Animated background.** A calm sunset over a lake with an obsidian portal
   (`tools/art/sunset.jpg`), split into sky, cloud and ground layers (cleaned of JPEG noise,
-  enlarged 2x and lightly sharpened). The clouds drift, a soft glow swirls inside the
+  enlarged 2x and smoothed, with soft cut-out edges). The clouds drift, a soft glow swirls inside the
   portal and smooth purple particles drift out of it, the
   lake sparkles, the sunset glow breathes and warm specks of light float about. Moving the
   mouse pans the layers gently side to side at different depths. See
@@ -30,10 +30,11 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
   rather than Minecraft's GUI units, so the menu looks the same whatever GUI Scale you use.
 - **Menu music.** `menu_music.ogg` starts with the intro and loops for as long as you are
   in the menus. It fades out when you join a world and back in when you leave. Vanilla menu
-  music is muted while it plays.
+  music never plays in the menus while the Obsidian menu is on, including at startup.
 - **Mods.** Opens Mod Menu if you have it, otherwise a built-in list with an
   "Open Mods Folder" button.
-- **Volume** (top right). Drag the slider, or click MUSIC to mute. It only changes the
+- **Music controls** (top right). Pause stops the song where it is and resumes from the
+  same spot; the speaker mutes it (it keeps playing silently); the slider sets the volume. It only changes the
   menu music, not your Minecraft volume.
 - **Info** (bottom left). Client name, Minecraft version and how many mods are loaded.
 - **Vanilla Menu** (bottom right). Switches to the normal Mojang title screen. A

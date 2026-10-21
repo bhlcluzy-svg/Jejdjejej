@@ -1,7 +1,12 @@
 package dev.obsidian.sound;
 
 import dev.obsidian.ObsidianClient;
+import dev.obsidian.mixin.SoundManagerAccessor;
+import dev.obsidian.mixin.SoundSystemAccessor;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.Channel;
+import net.minecraft.client.sound.Source;
+import net.minecraft.client.sound.SoundSystem;
 import net.minecraft.client.sound.AbstractSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.client.sound.TickableSoundInstance;
@@ -18,6 +23,8 @@ public final class MenuMusic {
 	private static final float FADE_STEP = 0.05f;
 
 	private static Track current;
+	/** Paused from the menu: the song stops where it is and resumes from the same spot. */
+	private static boolean paused;
 
 	private MenuMusic() {
 	}
@@ -27,6 +34,19 @@ public final class MenuMusic {
 		return current != null;
 	}
 
+	public static boolean isPaused() {
+		return paused;
+	}
+
+	public static void togglePause() {
+		paused = !paused;
+		if (current == null) return;
+		MinecraftClient client = MinecraftClient.getInstance();
+		SoundSystem system = ((SoundManagerAccessor) client.getSoundManager()).obsidian$getSoundSystem();
+		Channel.SourceManager source = ((SoundSystemAccessor) system).obsidian$getSources().get(current);
+		if (source != null) source.run(paused ? Source::pause : Source::resume);
+	}
+
 	public static void tick(MinecraftClient client) {
 		boolean wanted = client.world == null
 			&& client.getOverlay() == null
@@ -34,7 +54,7 @@ public final class MenuMusic {
 			&& ObsidianClient.CONFIG != null
 			&& !ObsidianClient.CONFIG.vanillaMenu;
 
-		if (wanted && current == null) {
+		if (wanted && current == null && !paused) {
 			client.getMusicTracker().stop();
 			current = new Track();
 			client.getSoundManager().play(current);

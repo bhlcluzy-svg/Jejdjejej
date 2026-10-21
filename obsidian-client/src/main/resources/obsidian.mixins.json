@@ -8,6 +8,8 @@
     "MinecraftClientMixin",
     "MusicTrackerMixin",
     "ScreenMixin",
+    "SoundManagerAccessor",
+    "SoundSystemAccessor",
     "SplashOverlayMixin",
     "TitleScreenMixin"
   ],
