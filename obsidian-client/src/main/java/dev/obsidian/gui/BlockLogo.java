@@ -77,7 +77,7 @@ public class BlockLogo {
 		float ex = cell * 0.18f, ey = cell * 0.42f;
 		float shown = MathHelper.clamp(intro / 1.2f, 0f, 1f);
 		// A dark halo separates the logo from the busy background, then a violet glow.
-		Theme.glow(ctx, x + width() / 2f, y + height() / 2f, width() * 1.5f, Theme.fade(0xFF000000, 0.75f * shown));
+		Theme.glow(ctx, x + width() / 2f, y + height() / 2f, width() * 1.5f, Theme.fade(0xFF1A0F33, 0.35f * shown));
 		Theme.glow(ctx, x + width() / 2f, y + height() / 2f, width() * 1.2f, Theme.fade(0xFF6B45FF, 0.30f * shown));
 
 		// Back to front: 3D side, black outline, then the block faces.

@@ -8,6 +8,7 @@
     "InactivityFpsLimiterMixin",
     "MinecraftClientMixin",
     "MusicTrackerMixin",
+    "ScreenMixin",
     "SplashOverlayMixin",
     "TitleScreenMixin"
   ],

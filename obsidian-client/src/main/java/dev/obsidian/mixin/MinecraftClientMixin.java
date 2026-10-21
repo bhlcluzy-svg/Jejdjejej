@@ -18,10 +18,10 @@ public abstract class MinecraftClientMixin {
 	/** Swap the vanilla title screen for ours, unless the player picked the vanilla menu. */
 	@ModifyVariable(method = "setScreen", at = @At("HEAD"), argsOnly = true)
 	private Screen obsidian$replaceTitleScreen(Screen screen) {
-		if (screen instanceof TitleScreen && ObsidianClient.CONFIG != null && !ObsidianClient.CONFIG.vanillaMenu) {
-			return new ObsidianTitleScreen();
-		}
-		return screen;
+		if (ObsidianClient.CONFIG == null || ObsidianClient.CONFIG.vanillaMenu) return screen;
+		// Closing a menu with nowhere to go (setScreen(null) outside a world) also means the title screen.
+		boolean toTitle = screen instanceof TitleScreen || screen == null && ((MinecraftClient) (Object) this).world == null;
+		return toTitle ? new ObsidianTitleScreen() : screen;
 	}
 
 	@Unique
