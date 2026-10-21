@@ -45,7 +45,13 @@ public final class MenuMusic {
 		MinecraftClient client = MinecraftClient.getInstance();
 		SoundSystem system = ((SoundManagerAccessor) client.getSoundManager()).obsidian$getSoundSystem();
 		Channel.SourceManager source = ((SoundSystemAccessor) system).obsidian$getSources().get(current);
-		if (source != null) source.run(paused ? Source::pause : Source::resume);
+		if (source != null) {
+			source.run(paused ? Source::pause : Source::resume);
+		} else if (!paused) {
+			// The song was stopped behind our back; forget it so tick() starts it again.
+			client.getSoundManager().stop(current);
+			current = null;
+		}
 	}
 
 	public static void tick(MinecraftClient client) {
@@ -60,6 +66,12 @@ public final class MenuMusic {
 			current = new Track();
 			client.getSoundManager().play(current);
 		} else if (current != null) {
+			// Leaving a world stops every sound, our song included, without telling us.
+			// If it is gone, forget it so it starts again next tick (or when unpaused).
+			if (++current.age > 20 && !client.getSoundManager().isPlaying(current)) {
+				current = null;
+				return;
+			}
 			current.fadingOut = !wanted;
 			if (current.isDone() || !wanted && current.fade <= 0f) {
 				client.getSoundManager().stop(current);
@@ -71,6 +83,8 @@ public final class MenuMusic {
 	private static final class Track extends AbstractSoundInstance implements TickableSoundInstance {
 		private float fade = 0f;
 		private boolean fadingOut = false;
+		/** Ticks since the song was started; gives the sound system a moment to pick it up. */
+		private int age;
 
 		private Track() {
 			super(TRACK, SoundCategory.MASTER, SoundInstance.createRandom());

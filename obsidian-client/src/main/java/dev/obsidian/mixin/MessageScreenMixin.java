@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Short messages like "Saving world" in the Obsidian style. */
+/** Short messages like "Saving world" become the Obsidian spinner. */
 @Mixin(MessageScreen.class)
 public abstract class MessageScreenMixin extends Screen {
 	@Shadow
@@ -31,7 +31,7 @@ public abstract class MessageScreenMixin extends Screen {
 	private void obsidian$background(DrawContext context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
 		if (!JoinScreens.enabled()) return;
 		JoinScreens.background(context, width, height);
-		JoinScreens.status(context, width, height, title.getString(), -1f);
+		JoinScreens.spinner(context, width, height);
 		ci.cancel();
 	}
 }

@@ -4,9 +4,7 @@ import dev.obsidian.gui.JoinScreens;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
-import net.minecraft.client.world.ClientChunkLoadProgress;
 import net.minecraft.text.Text;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,13 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(LevelLoadingScreen.class)
 public abstract class LevelLoadingScreenMixin extends Screen {
-	@Shadow
-	@Final
-	private static Text DOWNLOADING_TERRAIN_TEXT;
-	@Shadow
-	private ClientChunkLoadProgress chunkLoadProgress;
-	@Shadow
-	private float loadProgress;
 	@Shadow
 	private LevelLoadingScreen.WorldEntryReason reason;
 
@@ -49,7 +40,7 @@ public abstract class LevelLoadingScreenMixin extends Screen {
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
 	private void obsidian$status(DrawContext context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
 		if (!obsidian$styled()) return;
-		JoinScreens.status(context, width, height, DOWNLOADING_TERRAIN_TEXT.getString(), chunkLoadProgress.hasProgress() ? loadProgress : -1f);
+		JoinScreens.spinner(context, width, height);
 		ci.cancel();
 	}
 }

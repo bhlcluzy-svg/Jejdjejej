@@ -14,24 +14,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ProgressScreen.class)
 public abstract class ProgressScreenMixin extends Screen {
 	@Shadow
-	private Text title;
-	@Shadow
-	private Text task;
-	@Shadow
-	private int progress;
-	@Shadow
 	private boolean done;
 
 	protected ProgressScreenMixin(Text title) {
 		super(title);
 	}
 
-	/** Progress messages (like preparing a world) in the Obsidian style. When done, vanilla closes the screen as usual. */
+	/** Progress messages (like preparing a world) show the Obsidian spinner. When done, vanilla closes the screen as usual. */
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
 	private void obsidian$status(DrawContext context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
 		if (done || !JoinScreens.enabled()) return;
-		String text = title != null ? title.getString() : task != null ? task.getString() : "";
-		JoinScreens.status(context, width, height, text, task != null && progress > 0 ? progress / 100f : -1f);
+		JoinScreens.spinner(context, width, height);
 		ci.cancel();
 	}
 }

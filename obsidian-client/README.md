@@ -14,8 +14,8 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
   making them jump. (Drawn entirely from
   code-made textures, because the resource pack is not loaded yet at that point.)
 - **Joining screens.** "Connecting to the server...", "Loading terrain...", "Saving world"
-  and other progress screens show the scene (dimmed) with a gem, a spinning ring of dots,
-  the status in the Obsidian font and a progress bar when the progress is known. Nether
+  and other progress screens show the scene (dimmed) with just the gem and a spinning
+  ring of dots, no text. Nether
   and End portal loading keep Minecraft's own animation.
 - **Intro.** The first time the menu opens each launch, the scene fades in from black,
   the "Obsidian" title rises in and the buttons follow. Click or press any key to skip it.

@@ -16,11 +16,11 @@ public abstract class ConnectScreenMixin extends Screen {
 		super(title);
 	}
 
-	/** "Connecting to the server..." and the other statuses, drawn in the Obsidian style. */
+	/** "Connecting to the server...", "Joining world..." and the other statuses become the Obsidian spinner. */
 	@Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawCenteredTextWithShadow(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/text/Text;III)V"))
 	private void obsidian$status(DrawContext context, TextRenderer textRenderer, Text text, int x, int y, int color) {
 		if (JoinScreens.enabled()) {
-			JoinScreens.status(context, width, height, text.getString(), -1f);
+			JoinScreens.spinner(context, width, height);
 		} else {
 			context.drawCenteredTextWithShadow(textRenderer, text, x, y, color);
 		}
