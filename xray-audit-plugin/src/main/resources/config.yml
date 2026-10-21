@@ -1,0 +1,88 @@
+# XrayAudit - compares what the server actually sends to players with the real world.
+# Every check is passive: packets are read after Paper's anti-xray has run and are never modified.
+
+enabled: true
+
+audit:
+  # all        - audit every player
+  # permission - audit only players with xrayaudit.audited (useful for a dedicated test account)
+  mode: all
+  # Worlds to audit. Empty = all worlds.
+  worlds: []
+
+# Blocks whose leakage you care about. Material names (lowercase, no namespace).
+targets:
+  - coal_ore
+  - deepslate_coal_ore
+  - iron_ore
+  - deepslate_iron_ore
+  - copper_ore
+  - deepslate_copper_ore
+  - gold_ore
+  - deepslate_gold_ore
+  - nether_gold_ore
+  - redstone_ore
+  - deepslate_redstone_ore
+  - lapis_ore
+  - deepslate_lapis_ore
+  - diamond_ore
+  - deepslate_diamond_ore
+  - emerald_ore
+  - deepslate_emerald_ore
+  - nether_quartz_ore
+  - ancient_debris
+  - raw_iron_block
+  - raw_copper_block
+  - raw_gold_block
+  - spawner
+  - trial_spawner
+  - vault
+  - chest
+  - trapped_chest
+  - barrel
+  - ender_chest
+  - shulker_box
+  - amethyst_block
+  - budding_amethyst
+
+chunks:
+  # Fraction of outgoing chunk packets that are decoded and compared (0.0 - 1.0).
+  # Chunk analysis runs off the main thread, but each sample takes up to 5 chunk snapshots on the main thread.
+  sample-rate: 0.25
+  # Max chunk samples turned into snapshots per server tick.
+  max-snapshots-per-tick: 2
+  # Treat lava as an occluding neighbour. 'auto' = follow Paper's lava-obscures setting for the world.
+  lava-occludes: auto
+
+updates:
+  # Block updates are filtered on the network thread (only target blocks are queued), so these are cheap.
+  enabled: true
+  # How far (in blocks) to search for the nearest exposed face when classifying a revealed block.
+  exposure-search-radius: 4
+
+entities:
+  enabled: true
+  sample-rate: 0.5
+  # Spawns closer than this are ignored (a client would see them anyway).
+  min-distance: 16.0
+
+sounds:
+  enabled: true
+  sample-rate: 0.5
+  min-distance: 24.0
+
+limits:
+  # Observations waiting for the main thread. Extra observations are dropped and counted.
+  max-queue: 512
+  # Max non-chunk observations handled per tick.
+  max-checks-per-tick: 200
+
+report:
+  # Write reports/latest.md every N minutes (0 = only on /xrayaudit report and on shutdown).
+  interval-minutes: 10
+  # Minimum buried samples of a block type before its leak rate is judged.
+  min-samples: 20
+  # A block type fails when (leak rate - decoy rate) is above this value.
+  leak-threshold: 0.05
+  # Cap on detailed finding lines written per category per session.
+  max-detail-lines-per-category: 2000

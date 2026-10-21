@@ -1,0 +1,19 @@
+name: XrayAudit
+version: '${project.version}'
+main: dev.xrayaudit.XrayAuditPlugin
+api-version: '1.21'
+description: Audits outgoing chunk, block-update, entity and sound packets against the real world to find anti-xray / anti-ESP leaks.
+softdepend: [Orebfuscator, RayTraceAntiXray]
+commands:
+  xrayaudit:
+    description: Control the packet audit and write reports.
+    usage: /xrayaudit <status|report|reset|reload|on|off>
+    aliases: [xaudit]
+    permission: xrayaudit.admin
+permissions:
+  xrayaudit.admin:
+    description: Use /xrayaudit.
+    default: op
+  xrayaudit.audited:
+    description: Players with this permission are audited when audit.mode is 'permission'.
+    default: false
