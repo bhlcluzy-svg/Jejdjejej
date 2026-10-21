@@ -1,4 +1,4 @@
-"""Renders the glow sprite and mod icon PNGs.
+"""Renders the glow sprite, pill shape and mod icon PNGs.
 
 Run from obsidian-client/: python3 tools/make_sprites.py
 """
@@ -59,5 +59,17 @@ def glow():
     print("glow", img.size)
 
 
+def pill():
+    """A white circle; the menu draws its halves and middle as smooth pill buttons."""
+    s = 4
+    img = Image.new("RGBA", (64 * s, 64 * s), (255, 255, 255, 0))
+    ImageDraw.Draw(img).ellipse((0, 0, 64 * s - 1, 64 * s - 1), fill=(255, 255, 255, 255))
+    img.resize((64, 64), Image.LANCZOS).save(OUT + "pill.png")
+    with open(OUT + "pill.png.mcmeta", "w") as f:
+        f.write('{\n  "texture": {\n    "blur": true,\n    "clamp": true\n  }\n}\n')
+    print("pill (64, 64)")
+
+
 glow()
+pill()
 icon()

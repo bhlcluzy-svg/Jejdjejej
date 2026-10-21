@@ -66,7 +66,7 @@ public final class SceneBackground {
 
 	/** Where the logo looks best: the open sky in the upper middle, in screen units. */
 	public float logoCenterY() {
-		return coverY + coverH * 0.17f;
+		return coverY + coverH * 0.25f;
 	}
 
 	/** Lays the scene out for a screen size; called when a screen opens. */

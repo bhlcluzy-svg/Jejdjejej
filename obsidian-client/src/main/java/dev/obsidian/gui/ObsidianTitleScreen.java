@@ -61,7 +61,7 @@ public class ObsidianTitleScreen extends Screen {
 	protected void init() {
 		scene.prepare(width, height);
 		panels.clear();
-		logo = new LogoPanel(BlockLogo.forWidth(MathHelper.clamp(width * 0.58f, 200f, 440f)));
+		logo = new LogoPanel(MathHelper.clamp(width * 0.42f, 150f, 360f));
 		panels.add(logo);
 		bar = new BarPanel(width);
 		panels.add(bar);
@@ -146,18 +146,28 @@ public class ObsidianTitleScreen extends Screen {
 		}
 	}
 
+	/** The "Obsidian" title: soft white letters that rise and fade in during the intro. */
 	private void renderLogo(DrawContext ctx) {
-		// The blocks start dropping as the scene fades in.
-		float drop = introStarted ? introT - 0.7f : -1f;
-		if (!introRunning()) drop = 100f;
-		float x = logo.x + (logo.w - logo.blocks.width()) / 2f - scene.lookX() * LOGO_DEPTH * width;
-		float y = logo.y + (logo.h - logo.blocks.height()) / 2f - scene.lookY() * LOGO_DEPTH * width * 0.25f;
-		logo.blocks.render(ctx, x, y, drop, time);
+		float appear = introStarted ? Theme.easeOutCubic((introT - 0.8f) / 1.0f) : 0f;
+		if (appear <= 0.01f) return;
+		float cx = logo.x + logo.w / 2f - scene.lookX() * LOGO_DEPTH * width;
+		float cy = logo.y + logo.h / 2f - scene.lookY() * LOGO_DEPTH * width * 0.25f + (1f - appear) * 10f;
+		Text title = Theme.title("Obsidian");
+		float tw = textRenderer.getWidth(title);
+		float scale = logo.textScale;
+
+		Theme.glow(ctx, cx, cy, logo.w * 1.3f, Theme.fade(0xFFFFFFFF, 0.16f * appear));
+		ctx.getMatrices().pushMatrix();
+		ctx.getMatrices().translate(cx, cy);
+		ctx.getMatrices().scale(scale, scale);
+		// A soft violet drop shadow, then the white letters.
+		ctx.drawText(textRenderer, title, Math.round(-tw / 2f), -20 + 2, Theme.fade(0xFF5B4A9A, 0.55f * appear), false);
+		ctx.drawText(textRenderer, title, Math.round(-tw / 2f), -20, Theme.fade(0xFFFFFFFF, appear), false);
+		ctx.getMatrices().popMatrix();
 		if (dragging == logo) {
-			ctx.drawStrokedRectangle(logo.x - 1, logo.y - 1, logo.w + 2, logo.h + 2, Theme.fade(Theme.ACCENT, 0.8f));
+			ctx.drawStrokedRectangle(logo.x - 1, logo.y - 1, logo.w + 2, logo.h + 2, Theme.fade(0xFFFFFFFF, 0.6f));
 		}
 	}
-
 
 	// --------------------------------------------------------------- input
 
@@ -235,18 +245,19 @@ public class ObsidianTitleScreen extends Screen {
 	// -------------------------------------------------------------- panels
 
 	private class LogoPanel extends Panel {
-		final BlockLogo blocks;
+		/** Scale for the 40px title font so it spans the panel. */
+		final float textScale;
 
-		LogoPanel(BlockLogo blocks) {
-			// Room for the 3D side and outline around the blocks.
-			super("logo", Math.round(blocks.width()) + 8, Math.round(blocks.height()) + 8);
-			this.blocks = blocks;
+		LogoPanel(float targetWidth) {
+			super("logo", Math.round(targetWidth), 0);
+			textScale = targetWidth / Math.max(1, textRenderer.getWidth(Theme.title("Obsidian")));
+			h = Math.round(44 * textScale);
 		}
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			// Below the corner panels, in the empty sky above the middle.
-			return new int[]{(sw - w) / 2, Math.max(34, Math.round(scene.logoCenterY() - h / 2f))};
+			// Below the corner panels, in the open sky above the middle.
+			return new int[]{(sw - w) / 2, Math.max(40, Math.round(scene.logoCenterY() - h / 2f))};
 		}
 
 		@Override
@@ -255,63 +266,57 @@ public class ObsidianTitleScreen extends Screen {
 		}
 	}
 
-
 	/**
-	 * The buttons along the bottom: a row of four big ones (Singleplayer,
-	 * Multiplayer, Options, Quit) with Quick Join and Mods as smaller ones above.
+	 * The row of slim pill buttons along the bottom. When you have played on a
+	 * server, a small "Rejoin" pill sits above the row.
 	 */
 	private class BarPanel extends Panel {
-		private static final int BIG_H = 26, SMALL_H = 15, GAP = 6;
-		private final ObsidianButton quick;
+		private static final int ROW_H = 20, GAP = 6, QUICK_H = 15;
+		private static final String[] LABELS = {"Singleplayer", "Multiplayer", "Mods", "Options", "Quit Game"};
 
 		BarPanel(int screenW) {
-			super("bar", 0, SMALL_H + 5 + BIG_H + 3);
-			int bw = MathHelper.clamp((screenW - 24 - GAP * 3) / 4, 70, 140);
-			w = bw * 4 + GAP * 3;
-			int bigY = SMALL_H + 5;
-			buttons.add(new ObsidianButton(0, bigY, bw, BIG_H, () -> "Singleplayer",
-				() -> client.setScreen(new SelectWorldScreen(ObsidianTitleScreen.this)), ObsidianButton.Style.BIG));
-			buttons.add(new ObsidianButton(bw + GAP, bigY, bw, BIG_H, () -> "Multiplayer",
-				() -> client.setScreen(new MultiplayerScreen(ObsidianTitleScreen.this)), ObsidianButton.Style.BIG));
-			buttons.add(new ObsidianButton((bw + GAP) * 2, bigY, bw, BIG_H, () -> "Options",
-				() -> client.setScreen(new OptionsScreen(ObsidianTitleScreen.this, client.options)), ObsidianButton.Style.BIG));
-			buttons.add(new ObsidianButton((bw + GAP) * 3, bigY, bw, BIG_H, () -> "Quit Game",
-				() -> client.scheduleStop(), ObsidianButton.Style.BIG));
+			super("bar", 0, QUICK_H + 6 + ROW_H + 2);
+			List<Runnable> actions = List.of(
+				() -> client.setScreen(new SelectWorldScreen(ObsidianTitleScreen.this)),
+				() -> client.setScreen(new MultiplayerScreen(ObsidianTitleScreen.this)),
+				() -> client.setScreen(ModsScreens.create(ObsidianTitleScreen.this)),
+				() -> client.setScreen(new OptionsScreen(ObsidianTitleScreen.this, client.options)),
+				() -> client.scheduleStop());
 
-			// One text size for the whole row, set by the longest label.
-			float scale = 1.5f;
-			for (ObsidianButton b : buttons) scale = Math.min(scale, b.fittingScale(textRenderer));
-			for (ObsidianButton b : buttons) b.setTextScale(scale);
+			// Size each pill to its label; tighten the padding if the row would not fit.
+			int[] widths = new int[LABELS.length];
+			int total = GAP * (LABELS.length - 1);
+			for (int i = 0; i < LABELS.length; i++) {
+				widths[i] = ObsidianButton.pillWidth(textRenderer, LABELS[i]);
+				total += widths[i];
+			}
+			int over = total - (screenW - 16);
+			int shrink = over > 0 ? Math.min(14, (over + LABELS.length - 1) / LABELS.length) : 0;
+			int x = 0;
+			int rowY = QUICK_H + 6;
+			for (int i = 0; i < LABELS.length; i++) {
+				String label = LABELS[i];
+				int bw = widths[i] - shrink;
+				buttons.add(new ObsidianButton(x, rowY, bw, ROW_H, () -> label, actions.get(i), ObsidianButton.Style.PILL));
+				x += bw + GAP;
+			}
+			w = x - GAP;
 
-			int sw = Math.min(90, bw);
-			quick = new ObsidianButton(w / 2 - sw - 3, 0, sw, SMALL_H, () -> "Quick Join", ObsidianTitleScreen.this::quickJoin);
-			buttons.add(quick);
-			buttons.add(new ObsidianButton(w / 2 + 3, 0, sw, SMALL_H, () -> "Mods (" + ModsScreens.count() + ")",
-				() -> client.setScreen(ModsScreens.create(ObsidianTitleScreen.this))));
+			String server = ObsidianClient.CONFIG.lastServerName;
+			if (server != null && !server.isBlank() && ObsidianClient.CONFIG.lastServerAddress != null) {
+				String label = "Rejoin " + (server.length() > 24 ? server.substring(0, 23) + "\u2026" : server);
+				int qw = Math.min(w, ObsidianButton.pillWidth(textRenderer, label) - 6);
+				buttons.add(new ObsidianButton((w - qw) / 2, 0, qw, QUICK_H, () -> label, ObsidianTitleScreen.this::quickJoin, ObsidianButton.Style.PILL));
+			}
 		}
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{(sw - w) / 2, sh - h - 34};
+			return new int[]{(sw - w) / 2, sh - h - 40};
 		}
 
 		@Override
 		protected void renderContent(DrawContext ctx, TextRenderer tr, int mx, int my, float delta) {
-		}
-
-		@Override
-		public void render(DrawContext ctx, TextRenderer tr, int mx, int my, float delta, boolean dragging) {
-			super.render(ctx, tr, mx, my, delta, dragging);
-			// Quick Join: show which server it will join.
-			String name = ObsidianClient.CONFIG.lastServerName;
-			if (alpha > 0.5f && quick.isHovered()) {
-				String tip = name == null || name.isBlank() ? "No server yet: opens Multiplayer" : "Rejoin " + name;
-				int tw = tr.getWidth(tip) + 8;
-				int tx = MathHelper.clamp(x + quick.dx + quick.w / 2 - tw / 2, 2, width - tw - 2);
-				int ty = y - 16;
-				ObsidianButton.rounded(ctx, tx, ty, tw, 13, 3, 0xE0181426);
-				ctx.drawTextWithShadow(tr, tip, tx + 4, ty + 3, Theme.TEXT);
-			}
 		}
 	}
 
@@ -327,22 +332,22 @@ public class ObsidianTitleScreen extends Screen {
 
 	/** Client name, Minecraft version and mod count, bottom left, as plain text. */
 	private class InfoPanel extends Panel {
-		private static final float NAME_SCALE = 1.5f;
-		private final Text name = Text.literal("OBSIDIAN CLIENT").setStyle(net.minecraft.text.Style.EMPTY.withBold(true));
+		private static final float NAME_SCALE = 1.6f;
+		private final Text name = Theme.ui("OBSIDIAN CLIENT");
 
 		InfoPanel() {
-			super("info", 0, 26);
+			super("info", 0, 28);
 			w = Math.max(Math.round(textRenderer.getWidth(name) * NAME_SCALE), textRenderer.getWidth(versionLine())) + 4;
 		}
 
-		private String versionLine() {
+		private Text versionLine() {
 			int mods = ModsScreens.count();
-			return "MINECRAFT " + SharedConstants.getGameVersion().name() + "  /  " + mods + (mods == 1 ? " MOD" : " MODS");
+			return Theme.ui("MINECRAFT " + SharedConstants.getGameVersion().name() + "  /  " + mods + (mods == 1 ? " MOD" : " MODS"));
 		}
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			return new int[]{8, sh - h - 6};
+			return new int[]{10, sh - h - 6};
 		}
 
 		@Override
@@ -350,14 +355,14 @@ public class ObsidianTitleScreen extends Screen {
 			ctx.getMatrices().pushMatrix();
 			ctx.getMatrices().translate(x, y);
 			ctx.getMatrices().scale(NAME_SCALE, NAME_SCALE);
-			ctx.drawTextWithShadow(tr, name, 0, 0, Theme.fade(0xFFFFFFFF, alpha));
+			ctx.drawText(tr, name, 0, 0, Theme.fade(0xFFFFFFFF, alpha), true);
 			ctx.getMatrices().popMatrix();
-			ctx.drawTextWithShadow(tr, versionLine(), x, y + 16, Theme.fade(0xFFCFC6EC, alpha));
+			ctx.drawText(tr, versionLine(), x, y + 17, Theme.fade(0xFFD5CFEA, alpha), true);
 		}
 	}
 
 	private class VolumePanel extends Panel {
-		private static final int TRACK_X = 22, TRACK_RIGHT = 30;
+		private static final int TRACK_X = 22, TRACK_RIGHT = 36;
 		private boolean sliding;
 
 		VolumePanel() {
@@ -365,7 +370,7 @@ public class ObsidianTitleScreen extends Screen {
 			buttons.add(new ObsidianButton(3, 3, 14, 14, () -> ObsidianClient.CONFIG.muted ? "×" : "♪", () -> {
 				ObsidianClient.CONFIG.muted = !ObsidianClient.CONFIG.muted;
 				ObsidianClient.CONFIG.save();
-			}));
+			}, ObsidianButton.Style.ICON));
 		}
 
 		@Override
@@ -411,23 +416,23 @@ public class ObsidianTitleScreen extends Screen {
 
 		@Override
 		protected void renderContent(DrawContext ctx, TextRenderer tr, int mx, int my, float delta) {
-			ObsidianButton.rounded(ctx, x, y, w, h, 4, Theme.fade(0xC0201C30, alpha));
+			Theme.pill(ctx, x, y, w, h, Theme.fade(0xC02B2D45, alpha));
 			int ty = y + h / 2;
 			int s = trackStart(), e = trackEnd();
 			float v = ObsidianClient.CONFIG.effectiveVolume();
 			int knob = s + Math.round((e - s) * v);
-			ctx.fill(s, ty - 1, e, ty + 1, Theme.fade(0xFF2A2350, alpha));
-			ctx.fillGradient(s, ty - 1, knob, ty + 1, Theme.fade(Theme.ACCENT, alpha), Theme.fade(Theme.ACCENT_BLUE, alpha));
-			ctx.fill(knob - 2, ty - 4, knob + 2, ty + 4, Theme.fade(Theme.TEXT, alpha));
-			String pct = Math.round(v * 100) + "%";
-			ctx.drawTextWithShadow(tr, pct, x + w - 4 - tr.getWidth(pct), y + 6, Theme.fade(Theme.TEXT_DIM, alpha));
+			Theme.pill(ctx, s, ty - 1.5f, e - s, 3, Theme.fade(0x60FFFFFF, alpha));
+			Theme.pill(ctx, s, ty - 1.5f, knob - s, 3, Theme.fade(0xFFFFFFFF, alpha));
+			Theme.pill(ctx, knob - 4, ty - 4, 8, 8, Theme.fade(0xFFFFFFFF, alpha));
+			Text pct = Theme.ui(Math.round(v * 100) + "%");
+			ctx.drawText(tr, pct, x + w - 8 - tr.getWidth(pct), y + 5, Theme.fade(0xFFE4E2F2, alpha), true);
 		}
 	}
 
 	private class VanillaPanel extends Panel {
 		VanillaPanel() {
-			super("vanilla", 96, 16);
-			buttons.add(new ObsidianButton(0, 0, 96, 16, () -> "Vanilla Menu", () -> {
+			super("vanilla", Math.round(textRenderer.getWidth(Theme.ui("VANILLA MENU")) * 1.25f) + 2, 16);
+			buttons.add(new ObsidianButton(0, 0, w, 16, () -> "Vanilla Menu", () -> {
 				ObsidianClient.CONFIG.vanillaMenu = true;
 				ObsidianClient.CONFIG.save();
 				client.setScreen(new TitleScreen());

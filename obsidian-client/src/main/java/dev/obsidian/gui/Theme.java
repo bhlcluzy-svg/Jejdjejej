@@ -3,6 +3,9 @@ package dev.obsidian.gui;
 import dev.obsidian.ObsidianClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.text.Style;
+import net.minecraft.text.StyleSpriteSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
@@ -21,8 +24,39 @@ public final class Theme {
 	public static final int TEXT_DIM = 0xFF9A93C0;
 
 	public static final Identifier GLOW = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/glow.png");
+	/** A white circle; its halves and middle make smooth pill shapes. */
+	public static final Identifier PILL = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/pill.png");
+	/** Oswald (condensed bold) for buttons and labels, Fredoka (rounded) for the title. */
+	public static final StyleSpriteSource.Font UI_FONT = new StyleSpriteSource.Font(Identifier.of(ObsidianClient.MOD_ID, "ui"));
+	public static final StyleSpriteSource.Font TITLE_FONT = new StyleSpriteSource.Font(Identifier.of(ObsidianClient.MOD_ID, "title"));
 
 	private Theme() {
+	}
+
+	public static Text ui(String text) {
+		return Text.literal(text).setStyle(Style.EMPTY.withFont(UI_FONT));
+	}
+
+	public static Text title(String text) {
+		return Text.literal(text).setStyle(Style.EMPTY.withFont(TITLE_FONT));
+	}
+
+	/** Draws part of a texture (u, v, rw, rh) stretched over (x, y, w, h), with sub-pixel placement. */
+	public static void region(DrawContext ctx, Identifier texture, float x, float y, float w, float h, float u, float v, int rw, int rh, int texW, int texH, int color) {
+		if (w <= 0f || h <= 0f) return;
+		ctx.getMatrices().pushMatrix();
+		ctx.getMatrices().translate(x, y);
+		ctx.getMatrices().scale(w / rw, h / rh);
+		ctx.drawTexture(RenderPipelines.GUI_TEXTURED, texture, 0, 0, u, v, rw, rh, rw, rh, texW, texH, color);
+		ctx.getMatrices().popMatrix();
+	}
+
+	/** A smooth pill (fully rounded ends) of the given colour. */
+	public static void pill(DrawContext ctx, float x, float y, float w, float h, int color) {
+		float cap = Math.min(h / 2f, w / 2f);
+		region(ctx, PILL, x, y, cap, h, 0f, 0f, 32, 64, 64, 64, color);
+		region(ctx, PILL, x + cap, y, w - cap * 2f, h, 31f, 0f, 2, 64, 64, 64, color);
+		region(ctx, PILL, x + w - cap, y, cap, h, 32f, 0f, 32, 64, 64, 64, color);
 	}
 
 	/** Draws a whole texture stretched over (x, y, w, h), with sub-pixel placement so slow movement stays smooth. */

@@ -11,12 +11,12 @@ import java.util.function.Supplier;
 /** A menu button positioned relative to its panel, with hover and click sounds. */
 public class ObsidianButton {
 	public enum Style {
-		/** Big rounded slab with bold capitals, for the main row. */
-		BIG,
-		/** Small rounded pill. */
-		SMALL,
-		/** Just text, brightening on hover (like "Vanilla Menu"). */
-		TEXT
+		/** Slate pill with a capitalised label, for the main row. */
+		PILL,
+		/** Just text, brightening and underlined on hover (like "Vanilla Menu"). */
+		TEXT,
+		/** A small square icon button (the volume mute). */
+		ICON
 	}
 
 	public final int dx, dy, w, h;
@@ -25,12 +25,6 @@ public class ObsidianButton {
 	private final Style style;
 	private float hover;
 	private boolean wasOver;
-	/** Text size for BIG buttons; a row shares one so all labels match. */
-	private float textScale = 1.5f;
-
-	public ObsidianButton(int dx, int dy, int w, int h, Supplier<String> label, Runnable action) {
-		this(dx, dy, w, h, label, action, Style.SMALL);
-	}
 
 	public ObsidianButton(int dx, int dy, int w, int h, Supplier<String> label, Runnable action, Style style) {
 		this.dx = dx;
@@ -40,6 +34,11 @@ public class ObsidianButton {
 		this.label = label;
 		this.action = action;
 		this.style = style;
+	}
+
+	/** Width a PILL button needs for its label. */
+	public static int pillWidth(TextRenderer tr, String label) {
+		return tr.getWidth(Theme.ui(label.toUpperCase())) + 26;
 	}
 
 	public boolean contains(int px, int py, double mx, double my) {
@@ -53,49 +52,42 @@ public class ObsidianButton {
 		hover += ((over ? 1f : 0f) - hover) * Math.min(1f, 0.3f * delta);
 		int x = px + dx, y = py + dy;
 		switch (style) {
-			case BIG -> renderBig(ctx, tr, x, y, alpha);
-			case SMALL -> renderSmall(ctx, tr, x, y, alpha);
+			case PILL -> renderPill(ctx, tr, x, y, alpha);
 			case TEXT -> renderText(ctx, tr, x, y, alpha);
+			case ICON -> renderIcon(ctx, tr, x, y, alpha);
 		}
 	}
 
-	private void renderBig(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
-		float lift = 2f * hover;
-		// Soft shadow underneath that stays put while the button lifts.
-		rounded(ctx, x, y + 3, w, h, 4, Theme.fade(0x66000000, alpha));
+	private void renderPill(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
+		// Soft shadow that stays put while the button lifts a little on hover.
+		Theme.pill(ctx, x, y + 2, w, h, Theme.fade(0x55000000, alpha));
+		float lift = 1.5f * hover;
+		Theme.pill(ctx, x, y - lift, w, h, Theme.fade(Theme.lerpColor(hover, 0xE62B2D45, 0xF2433F6B), alpha));
+		Text text = Theme.ui(label.get().toUpperCase());
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFE4E2F2, 0xFFFFFFFF), alpha);
 		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(0f, -lift);
-		rounded(ctx, x, y, w, h, 4, Theme.fade(Theme.lerpColor(hover, 0xE0262338, 0xF0372F5C), alpha));
-		// Light top edge, violet bottom edge when hovered.
-		ctx.fill(x + 3, y + 1, x + w - 3, y + 2, Theme.fade(0x30FFFFFF, alpha));
-		if (hover > 0.01f) ctx.fill(x + 3, y + h - 2, x + w - 3, y + h - 1, Theme.fade(Theme.ACCENT, alpha * hover));
-		Text text = Text.literal(label.get().toUpperCase()).setStyle(net.minecraft.text.Style.EMPTY.withBold(true));
-		float scale = textScale;
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(x + w / 2f, y + h / 2f);
-		ctx.getMatrices().scale(scale, scale);
-		int color = Theme.fade(Theme.lerpColor(hover, 0xFFD9D4F0, 0xFFFFFFFF), alpha);
-		if ((color >>> 24) > 8) ctx.drawCenteredTextWithShadow(tr, text, 0, -4, color);
+		ctx.getMatrices().translate(x + w / 2f - tr.getWidth(text) / 2f, y - lift + (h - 9) / 2f);
+		if ((color >>> 24) > 8) ctx.drawText(tr, text, 0, 0, color, true);
 		ctx.getMatrices().popMatrix();
-		ctx.getMatrices().popMatrix();
-	}
-
-	private void renderSmall(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
-		rounded(ctx, x, y, w, h, 3, Theme.fade(Theme.lerpColor(hover, 0xC0201C30, 0xE0372F5C), alpha));
-		int color = Theme.fade(Theme.lerpColor(hover, 0xFFC9C2E6, 0xFFFFFFFF), alpha);
-		if ((color >>> 24) > 8) ctx.drawCenteredTextWithShadow(tr, label.get(), x + w / 2, y + (h - 8) / 2, color);
 	}
 
 	private void renderText(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
-		Text text = Text.literal(label.get().toUpperCase()).setStyle(net.minecraft.text.Style.EMPTY.withBold(true));
-		float scale = Math.min(1.25f, (float) w / Math.max(1, tr.getWidth(text)));
-		int color = Theme.fade(Theme.lerpColor(hover, 0xFFCFC9E8, 0xFFFFFFFF), alpha);
+		Text text = Theme.ui(label.get().toUpperCase());
+		float scale = 1.25f;
+		float tw = tr.getWidth(text) * scale;
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFD8D3EE, 0xFFFFFFFF), alpha);
 		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(x + w - tr.getWidth(text) * scale, y + (h - 8 * scale) / 2f);
+		ctx.getMatrices().translate(x + w - tw, y + (h - 9 * scale) / 2f);
 		ctx.getMatrices().scale(scale, scale);
-		if ((color >>> 24) > 8) ctx.drawTextWithShadow(tr, text, 0, 0, color);
-		if (hover > 0.01f) ctx.fill(0, 10, Math.round(tr.getWidth(text) * hover), 11, Theme.fade(Theme.ACCENT, alpha * hover));
+		if ((color >>> 24) > 8) ctx.drawText(tr, text, 0, 0, color, true);
+		if (hover > 0.01f) ctx.fill(0, 11, Math.round(tr.getWidth(text) * hover), 12, Theme.fade(0xFFFFFFFF, 0.8f * alpha * hover));
 		ctx.getMatrices().popMatrix();
+	}
+
+	private void renderIcon(DrawContext ctx, TextRenderer tr, int x, int y, float alpha) {
+		Theme.pill(ctx, x, y, w, h, Theme.fade(Theme.lerpColor(hover, 0x00000000, 0x40FFFFFF), alpha));
+		int color = Theme.fade(Theme.lerpColor(hover, 0xFFD8D3EE, 0xFFFFFFFF), alpha);
+		if ((color >>> 24) > 8) ctx.drawCenteredTextWithShadow(tr, label.get(), x + w / 2, y + (h - 8) / 2, color);
 	}
 
 	/** A rectangle with stepped corners of the given radius, which reads as rounded. */
@@ -111,16 +103,6 @@ public class ObsidianButton {
 			ctx.fill(inset, h - 1 - i, w - inset, h - i, color);
 		}
 		ctx.getMatrices().popMatrix();
-	}
-
-	/** The largest text size (up to 1.5x) at which this button's label fits. */
-	public float fittingScale(TextRenderer tr) {
-		Text text = Text.literal(label.get().toUpperCase()).setStyle(net.minecraft.text.Style.EMPTY.withBold(true));
-		return Math.min(1.5f, (w - 14f) / Math.max(1, tr.getWidth(text)));
-	}
-
-	public void setTextScale(float textScale) {
-		this.textScale = textScale;
 	}
 
 	public boolean isHovered() {

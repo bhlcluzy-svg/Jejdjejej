@@ -33,7 +33,7 @@ public class ObsidianConfig {
 	/** Bumped when the menu layout changes, so old saved positions are dropped. */
 	public int layoutVersion = LAYOUT_VERSION;
 
-	private static final int LAYOUT_VERSION = 3;
+	private static final int LAYOUT_VERSION = 4;
 
 	public static ObsidianConfig load() {
 		if (Files.exists(FILE)) {
