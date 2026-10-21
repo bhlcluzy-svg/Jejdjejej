@@ -16,28 +16,25 @@ import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * The Obsidian main menu: an intro, a layered background that shifts with the
- * mouse, and movable panels: the logo, a button bar along the bottom, client
- * info, volume and the vanilla menu switch.
+ * The Obsidian main menu: an intro, the animated space background, and
+ * movable panels: the block logo, a button bar along the bottom, client info,
+ * volume and the vanilla menu switch.
  */
 public class ObsidianTitleScreen extends Screen {
 	private static final float INTRO_LENGTH = 2.6f;
-	/** How far each background layer slides at full mouse offset, as a fraction of the screen width. */
-	private static final float DEPTH_SKY = 0.010f, DEPTH_RING = 0.020f, DEPTH_FAR = 0.036f, DEPTH_PARTICLES = 0.048f, DEPTH_NEAR = 0.068f;
+	/** The logo floats a little with the mouse, between the background and the buttons. */
+	private static final float LOGO_DEPTH = 0.02f;
 
 	private final List<Panel> panels = new ArrayList<>();
-	private final List<Particle> particles = new ArrayList<>();
-	private final Random random = Random.create();
+	private final SpaceBackground space = new SpaceBackground();
 
 	private LogoPanel logo;
 	private BarPanel bar;
@@ -55,7 +52,6 @@ public class ObsidianTitleScreen extends Screen {
 
 	/** Smoothed mouse position, -1 to 1 from the centre of the screen. */
 	private float lookX, lookY;
-	private int mouseX = -1000, mouseY = -1000;
 
 	public ObsidianTitleScreen() {
 		super(Text.literal(ObsidianClient.NAME));
@@ -65,8 +61,9 @@ public class ObsidianTitleScreen extends Screen {
 
 	@Override
 	protected void init() {
+		space.resize(width, height);
 		panels.clear();
-		logo = new LogoPanel(MathHelper.clamp(Math.round(width * 0.42f), 150, 300));
+		logo = new LogoPanel(BlockLogo.forWidth(MathHelper.clamp(width * 0.58f, 200f, 440f)));
 		panels.add(logo);
 		bar = new BarPanel(width);
 		panels.add(bar);
@@ -74,10 +71,6 @@ public class ObsidianTitleScreen extends Screen {
 		panels.add(new VolumePanel());
 		panels.add(new VanillaPanel());
 		for (Panel p : panels) p.layout(width, height);
-
-		int target = MathHelper.clamp(width * height / 2200, 30, 90);
-		while (particles.size() < target) particles.add(new Particle(true));
-		while (particles.size() > target) particles.remove(particles.size() - 1);
 	}
 
 	@Override
@@ -112,8 +105,6 @@ public class ObsidianTitleScreen extends Screen {
 			if (!introRunning()) ObsidianClient.introPlayed = true;
 		}
 
-		mouseX = mx;
-		mouseY = my;
 		// Ease towards the mouse, plus a slow sway so the scene never sits still.
 		float targetX = MathHelper.clamp((mx / (float) Math.max(1, width)) * 2f - 1f, -1f, 1f) + 0.12f * MathHelper.sin(time * 0.23f);
 		float targetY = MathHelper.clamp((my / (float) Math.max(1, height)) * 2f - 1f, -1f, 1f) + 0.08f * MathHelper.cos(time * 0.19f);
@@ -121,69 +112,14 @@ public class ObsidianTitleScreen extends Screen {
 		lookX += (targetX - lookX) * k;
 		lookY += (targetY - lookY) * k;
 
-		for (Particle p : particles) p.update(dt);
-	}
-
-	/** Horizontal and vertical shift for a layer at the given depth. */
-	private float shiftX(float depth) {
-		return -lookX * depth * width;
-	}
-
-	private float shiftY(float depth) {
-		return -lookY * depth * width * 0.6f;
-	}
-
-	/** Size of a 16:9 layer scaled to cover the screen plus enough margin to slide: {width, height}. */
-	private float[] cover(float depth) {
-		float margin = depth * width * 1.2f;
-		float coverW = Math.max(width + margin * 2, (height + margin * 2) * Theme.BG_W / (float) Theme.BG_H);
-		return new float[]{coverW, coverW * Theme.BG_H / Theme.BG_W};
-	}
-
-	private void layer(DrawContext ctx, Identifier texture, float depth) {
-		float[] c = cover(depth);
-		float x = (width - c[0]) / 2f + shiftX(depth);
-		float y = (height - c[1]) / 2f + shiftY(depth);
-		Theme.image(ctx, texture, x, y, c[0], c[1], Theme.BG_W, Theme.BG_H, -1);
-	}
-
-	/** Where the eclipse is on screen right now: {centre x, centre y, disc radius}. */
-	private float[] eclipse() {
-		float[] c = cover(DEPTH_RING);
-		float cx = (width - c[0]) / 2f + c[0] * Theme.RING_X + shiftX(DEPTH_RING);
-		float cy = (height - c[1]) / 2f + c[1] * Theme.RING_Y + shiftY(DEPTH_RING);
-		return new float[]{cx, cy, c[0] * 250f / Theme.BG_W};
+		space.update(dt, time, lookX, lookY, mx, my);
 	}
 
 	@Override
 	public void renderBackground(DrawContext ctx, int mx, int my, float delta) {
 		advanceClock(mx, my);
-		float reveal = Theme.easeInOut((introT - 0.2f) / 1.3f);
-
-		ctx.fill(0, 0, width, height, 0xFF000000);
-		layer(ctx, Theme.BG_SKY, DEPTH_SKY);
-
-		// The eclipse: a breathing glow behind it, and it "ignites" during the intro.
-		float[] e = eclipse();
-		float pulse = 0.5f + 0.5f * MathHelper.sin(time * 1.4f);
-		float ignite = Theme.easeOutCubic((introT - 0.4f) / 1.2f);
-		Theme.glow(ctx, e[0], e[1], e[2] * (3.4f + 0.25f * pulse), Theme.fade(0xFF6A4CFF, (0.28f + 0.12f * pulse) * ignite));
-		float ringSize = e[2] * Theme.RING_SIZE / 250f * MathHelper.lerp(ignite, 0.92f, 1f);
-		Theme.image(ctx, Theme.BG_RING, e[0] - ringSize / 2f, e[1] - ringSize / 2f, ringSize, ringSize, Theme.RING_SIZE, Theme.RING_SIZE, Theme.fade(0xFFFFFFFF, ignite));
-
-		layer(ctx, Theme.BG_FAR, DEPTH_FAR);
-
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(shiftX(DEPTH_PARTICLES), shiftY(DEPTH_PARTICLES));
-		for (Particle p : particles) p.render(ctx);
-		ctx.getMatrices().popMatrix();
-
-		layer(ctx, Theme.BG_NEAR, DEPTH_NEAR);
-
-		// Darken the bottom so the button bar reads clearly.
-		ctx.fillGradient(0, height * 2 / 3, width, height, 0x00000000, 0xB0040210);
-
-		float curtain = 1f - reveal;
+		space.render(ctx, 1f);
+		float curtain = 1f - Theme.easeInOut((introT - 0.2f) / 1.3f);
 		if (curtain > 0f) ctx.fill(0, 0, width, height, Theme.fade(0xFF000000, curtain));
 	}
 
@@ -213,33 +149,24 @@ public class ObsidianTitleScreen extends Screen {
 			// Shown for a few seconds, then it gets out of the way.
 			float hintAlpha = 1f - MathHelper.clamp((time - readyAt - 5f) / 1.5f, 0f, 1f);
 			if (hintAlpha > 0.02f) {
-				String hint = "Drag panels to move them  ·  Right-click a panel to reset it";
+				String hint = "Drag panels to move them  \u00B7  Right-click a panel to reset it";
 				ctx.drawCenteredTextWithShadow(textRenderer, hint, width / 2, Math.max(2, bar.y - 12), Theme.fade(Theme.TEXT, 0.7f * hintAlpha));
 			}
 		}
 	}
 
-	/** The logo floats with the eclipse layer, so it stays sitting on it as the scene moves. */
 	private void renderLogo(DrawContext ctx) {
-		float appear = Theme.easeOutCubic((introT - 0.8f) / 1.0f);
-		float scale = MathHelper.lerp(appear, 1.25f, 1.0f);
-		float cx = logo.x + logo.w / 2f + shiftX(DEPTH_RING);
-		float cy = logo.y + logo.h / 2f + shiftY(DEPTH_RING);
-
-		float burst = MathHelper.clamp((introT - 1.3f) / 0.8f, 0f, 1f);
-		if (burst > 0f && burst < 1f) {
-			Theme.glow(ctx, cx, cy, logo.w * (0.8f + burst * 1.8f), Theme.fade(0xFFB8A6FF, (1f - burst) * 0.7f));
-		}
-
-		ctx.getMatrices().pushMatrix();
-		ctx.getMatrices().translate(cx, cy);
-		ctx.getMatrices().scale(scale, scale);
-		Theme.logo(ctx, -logo.w / 2f, -logo.h / 2f, logo.w, appear);
-		ctx.getMatrices().popMatrix();
+		// The blocks start dropping as the scene fades in.
+		float drop = introStarted ? introT - 0.7f : -1f;
+		if (!introRunning()) drop = 100f;
+		float x = logo.x + (logo.w - logo.blocks.width()) / 2f - lookX * LOGO_DEPTH * width;
+		float y = logo.y + (logo.h - logo.blocks.height()) / 2f - lookY * LOGO_DEPTH * width * 0.6f;
+		logo.blocks.render(ctx, x, y, drop, time);
 		if (dragging == logo) {
 			ctx.drawStrokedRectangle(logo.x - 1, logo.y - 1, logo.w + 2, logo.h + 2, Theme.fade(Theme.ACCENT, 0.8f));
 		}
 	}
+
 
 	// --------------------------------------------------------------- input
 
@@ -317,25 +244,27 @@ public class ObsidianTitleScreen extends Screen {
 	// -------------------------------------------------------------- panels
 
 	private class LogoPanel extends Panel {
-		LogoPanel(int w) {
-			super("logo", w, Math.round(w * (float) Theme.LOGO_H / Theme.LOGO_W));
+		final BlockLogo blocks;
+
+		LogoPanel(BlockLogo blocks) {
+			// Room for the 3D side and outline around the blocks.
+			super("logo", Math.round(blocks.width()) + 8, Math.round(blocks.height()) + 8);
+			this.blocks = blocks;
 		}
 
 		@Override
 		protected int[] defaultPos(int sw, int sh) {
-			// Centred on the eclipse, before parallax (that is added while drawing).
-			float[] c = cover(DEPTH_RING);
-			float cy = (sh - c[1]) / 2f + c[1] * Theme.RING_Y;
-			return new int[]{(sw - w) / 2, Math.round(cy - h / 2f)};
+			// Below the corner panels, in the empty sky above the middle.
+			return new int[]{(sw - w) / 2, Math.max(34, Math.round(space.logoCenterY() - h / 2f))};
 		}
 
 		@Override
 		protected void renderContent(DrawContext ctx, TextRenderer tr, int mx, int my, float delta) {
-			// Drawn by renderLogo so it can follow the eclipse.
+			// Drawn by renderLogo, on top of the other panels.
 		}
 	}
 
-	/** The row of main buttons along the bottom of the screen. */
+
 	private class BarPanel extends Panel {
 		private static final int BH = 20, GAP = 4, PAD = 4;
 
@@ -520,56 +449,6 @@ public class ObsidianTitleScreen extends Screen {
 
 		@Override
 		protected void renderContent(DrawContext ctx, TextRenderer tr, int mx, int my, float delta) {
-		}
-	}
-
-	// ----------------------------------------------------------- particles
-
-	/** A purple speck rising like a nether portal particle. It drifts away from the cursor. */
-	private class Particle {
-		float x, y, vx, vy, size, alpha, phase, pushX, pushY;
-		int color;
-
-		Particle(boolean anywhere) {
-			respawn(anywhere);
-		}
-
-		void respawn(boolean anywhere) {
-			x = random.nextFloat() * Math.max(1, width);
-			y = anywhere ? random.nextFloat() * Math.max(1, height) : height + 6f;
-			vx = (random.nextFloat() - 0.5f) * 5f;
-			vy = -(3f + random.nextFloat() * 10f);
-			size = 2.5f + random.nextFloat() * random.nextFloat() * 8f;
-			alpha = 0.35f + random.nextFloat() * 0.55f;
-			phase = random.nextFloat() * MathHelper.TAU;
-			color = random.nextFloat() < 0.6f ? 0xFFB49BFF : 0xFF8FA8FF;
-			pushX = pushY = 0f;
-		}
-
-		void update(float dt) {
-			// Push away from the cursor (in the particles' own shifted space).
-			float px = x + shiftX(DEPTH_PARTICLES), py = y + shiftY(DEPTH_PARTICLES);
-			float dx = px - mouseX, dy = py - mouseY;
-			float d2 = dx * dx + dy * dy;
-			float radius = 34f;
-			if (d2 < radius * radius && d2 > 0.01f) {
-				float d = MathHelper.sqrt(d2);
-				float force = (1f - d / radius) * 160f;
-				pushX += dx / d * force * dt;
-				pushY += dy / d * force * dt;
-			}
-			float damp = (float) Math.exp(-dt * 2.5f);
-			pushX *= damp;
-			pushY *= damp;
-
-			x += (vx + MathHelper.sin(time * 0.7f + phase) * 3f + pushX) * dt;
-			y += (vy + pushY) * dt;
-			if (y < -10 || x < -20 || x > width + 20 || y > height + 20) respawn(false);
-		}
-
-		void render(DrawContext ctx) {
-			float twinkle = 0.7f + 0.3f * MathHelper.sin(time * 2.1f + phase);
-			Theme.glow(ctx, x, y, size, Theme.fade(color, alpha * twinkle));
 		}
 	}
 }

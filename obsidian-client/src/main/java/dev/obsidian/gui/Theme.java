@@ -20,28 +20,9 @@ public final class Theme {
 	public static final int TEXT = 0xFFEDE9FF;
 	public static final int TEXT_DIM = 0xFF9A93C0;
 
-	public static final Identifier LOGO = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/logo.png");
-	public static final int LOGO_W = 1023;
-	public static final int LOGO_H = 233;
 	public static final Identifier GLOW = Identifier.of(ObsidianClient.MOD_ID, "textures/gui/glow.png");
 
-	/** Background layers, back to front. All 1920x1080 except the square eclipse ring. */
-	public static final Identifier BG_SKY = bg("sky");
-	public static final Identifier BG_RING = bg("ring");
-	public static final Identifier BG_FAR = bg("far");
-	public static final Identifier BG_NEAR = bg("near");
-	public static final int BG_W = 1920;
-	public static final int BG_H = 1080;
-	public static final int RING_SIZE = 1100;
-	/** Where the eclipse sits in the 1920x1080 artwork, as fractions. */
-	public static final float RING_X = 0.5f;
-	public static final float RING_Y = 0.36f;
-
 	private Theme() {
-	}
-
-	private static Identifier bg(String name) {
-		return Identifier.of(ObsidianClient.MOD_ID, "textures/gui/bg/" + name + ".png");
 	}
 
 	/** Draws a whole texture stretched over (x, y, w, h), with sub-pixel placement so slow movement stays smooth. */
@@ -82,10 +63,6 @@ public final class Theme {
 	/** Draws the soft glow sprite centred on (cx, cy), tinted with an ARGB colour. */
 	public static void glow(DrawContext ctx, float cx, float cy, float size, int color) {
 		image(ctx, GLOW, cx - size / 2f, cy - size / 2f, size, size, 128, 128, color);
-	}
-
-	public static void logo(DrawContext ctx, float x, float y, float w, float alpha) {
-		image(ctx, LOGO, x, y, w, w * LOGO_H / LOGO_W, LOGO_W, LOGO_H, fade(0xFFFFFFFF, alpha));
 	}
 
 	public static float easeOutCubic(float t) {

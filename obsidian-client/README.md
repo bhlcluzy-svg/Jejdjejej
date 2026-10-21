@@ -6,13 +6,18 @@ A Fabric mod for Minecraft 1.21.11 that replaces the main menu with the Obsidian
 
 ## What it does
 
-- **Intro.** The first time the menu opens each launch, the screen starts black, the
-  obsidian eclipse glows in, the OBSIDIAN logo zooms in with a flash of light, and the
-  buttons rise into place. Click or press any key to skip it.
-- **Background.** A night sky with a violet nebula, an obsidian eclipse behind the logo,
-  distant crystal spires and big foreground shards with glowing cracks. Each layer moves a
-  different amount as you move the mouse (parallax), and purple particles rise and drift
-  away from your cursor.
+- **Intro.** The first time the menu opens each launch, the space scene fades in from
+  black, the OBSIDIAN blocks drop into place column by column, and the buttons rise into
+  place. Click or press any key to skip it.
+- **Title.** "OBSIDIAN" built from Minecraft's own obsidian (and a few crying obsidian)
+  block textures, Minecraft-logo style: black outline, bevelled edges and a 3D side. A
+  sheen sweeps across it every few seconds.
+- **Animated background.** The space picture in `tools/art/space.webp`, with its ships,
+  Saturn and asteroids cut out into separate sprites so they cruise, bob and tumble. Stars
+  twinkle, purple portal dust spirals into the obsidian ring, a ship flies across the
+  screen every 10 to 20 seconds, and real Minecraft blocks float past in the foreground.
+  Everything shifts with the mouse at its own depth (parallax), and the purple dust drifts
+  away from your cursor. See `screenshots/obsidian-menu.mp4`.
 - **Menu music.** `menu_music.ogg` starts with the intro and loops for as long as you are
   in the menus. It fades out when you join a world and back in when you leave. Vanilla menu
   music is muted while it plays.
@@ -46,11 +51,12 @@ Settings are saved in `config/obsidian.json`.
 
 - Music: replace `src/main/resources/assets/obsidian/sounds/menu_music.ogg` with any
   `.ogg` file (`ffmpeg -i song.mp3 -c:a libvorbis -q:a 4 menu_music.ogg`).
-- Logo, glow and icon: edit and run `python3 tools/make_logo.py` (needs Pillow). The logo
-  uses Inter Display Black (SIL Open Font License).
-- Background layers: edit and run `python3 tools/make_background.py` (needs Pillow and
-  numpy), or replace the PNGs in `src/main/resources/assets/obsidian/textures/gui/bg/`
-  with your own 1920x1080 art.
+- Title letters: edit the block patterns in `BlockLogo.java`.
+- Glow sprite and mod icon: `python3 tools/make_sprites.py` (needs Pillow).
+- Background: replace `tools/art/space.webp` and update the object boxes in
+  `tools/make_space.py`, then run `python3 tools/make_space.py` (needs Pillow, numpy and
+  opencv-python-headless). It cuts the listed objects into sprites, fills the holes, and
+  regenerates `SpaceLayout.java`.
 - Frame rate: launch with `-Dobsidian.logFps=true` to print it to the log every 3 seconds.
 
 ## Build
